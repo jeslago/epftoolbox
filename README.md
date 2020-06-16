@@ -1,4 +1,4 @@
-# A benchmark and toolbox library for electricity price forecasting
+# A benchmark and toolbox for electricity price forecasting
 
 An open-access benchmark and toolbox to help drive the research in electricity price 
 forecasting. 
@@ -21,7 +21,7 @@ two main models:
   * Data: each dataset contains historical prices plus two time series representing exogenous inputs, 
 
 * Ready available forecasts of the state-of-the-art methods so that researchers can evaluate new methods 
-without re-estiamting models.
+without re-estimating the models.
 
 
 ----
