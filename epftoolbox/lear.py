@@ -18,28 +18,6 @@ class LEAR(object):
         # Calibration window in hours
         self.calibration_window = calibration_window
 
-    def transform(self, Z, Zmedian=None, Zmad=None):
-
-        if Zmedian is None and Zmad is None:
-            # Normalization (subtracting median and dividing by the median absolute deviation)
-            Zmedian = np.median(Z, 0)
-            Zmad = mad(Z)
-
-        Z = (Z - Zmedian) / Zmad
-
-        # Applying the asinh transformation
-        Z = np.arcsinh(Z)
-
-        return Z, Zmedian, Zmad
-
-    def inverse_transfor(self, Z, Zmedian, Zmad):
-
-        Z = np.sinh(Z)
-
-        Z = Z * Zmad + Zmedian
-
-        return Z
-
     # Ignore convergence warnings from scikit-learn LASSO module
     @ignore_warnings(category=ConvergenceWarning)
     def recalibrate(self, Xtrain, Ytrain, Xtest):
@@ -52,11 +30,7 @@ class LEAR(object):
 
         # # Rescaling all inputs except dummies (7 last features)
         [Xtrain_no_dummies, Xtest_no_dummies], _ = scaling([Xtrain[:, :-7], Xtest[:, :-7]], 'Invariant')
-
-        # Ytrain, Ymedian, Ymad = self.transform(Ytrain)
-        # Xtrain_no_dummies, Xmedian, Xmad = self.transform(Xtrain[:, :-7])
-        # Xtest_no_dummies, _, _ = self.transform(Xtest[:, :-7], Zmedian=Xmedian, Zmad=Xmad)
-
+        
         Xtrain[:, :-7] = Xtrain_no_dummies
         Xtest[:, :-7] = Xtest_no_dummies
 
@@ -72,7 +46,6 @@ class LEAR(object):
 
             # Predicting test dataset and saving
             Yp[h] = model.predict(Xtest)
-            # Yp[h] = self.inverse_transfor(Yp_.reshape(1, -1), Ymedian[h], Ymad[h])
         
         Yp = self.scaler.inverse_transform(Yp.reshape(1, -1))
 
