@@ -1,13 +1,14 @@
 import numpy as np
-from keras.models import Model
-from keras.layers import Dense, Input, Dropout, AlphaDropout
-from keras.layers.normalization import BatchNormalization
+import pandas as pd
 import time
-import keras as kr
-from keras.regularizers import l2, l1
-from keras.layers.advanced_activations import LeakyReLU, PReLU
-from epftoolbox.metrics import MAE
 
+import tensorflow.keras as kr
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Input, Dropout, AlphaDropout, BatchNormalization
+from tensorflow.keras.regularizers import l2, l1
+from tensorflow.keras.layers import LeakyReLU, PReLU
+from epftoolbox.metrics import MAE
+import tensorflow.keras.backend as K
 
 class DNN(object):
 
@@ -174,6 +175,8 @@ class DNN(object):
         Ybar = self.model.predict(X, verbose=0)
         return Ybar
 
+    def clear_session(self):
+        K.clear_session()
 
 def build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, dfTest=None, percentage_val=0.25,
                         date_test=None, hyperoptimization=False, data_augmentation=False):
