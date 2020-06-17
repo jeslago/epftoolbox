@@ -1,7 +1,6 @@
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from statsmodels.robust import mad
-import pandas as pd
 
 class MedianScaler(object):
 

@@ -3,8 +3,8 @@ import numpy as np
 from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
 import pickle as pc
 from datetime import datetime
-from epftoolbox.dnn.model import DNN
-from epftoolbox.wrangling import scaling, createAndSplitXYs
+from epftoolbox.dnn.model import DNN, build_and_split_XYs
+from epftoolbox.wrangling import scaling
 from epftoolbox.datasets import read_data
 from epftoolbox.metrics import MAE, sMAPE
 from functools import partial
@@ -95,7 +95,7 @@ def hyperopt_objective(hyperparameters, trials, trials_file_name, max_evals, nla
 
     # Defining X,Y datasets
     Xtrain, Ytrain, Xval, Yval, Xtest, Ytest, indexTest = \
-        createAndSplitXYs(dfTrain=dfTrain_cw, dfTest=dfTest, features=hyperparameters, 
+        build_and_split_XYs(dfTrain=dfTrain_cw, dfTest=dfTest, features=hyperparameters, 
                           shuffle_train=shuffle_train, hyperoptimization=True,
                           data_augmentation=data_augmentation, n_exogenous_inputs=n_exogenous_inputs)
     
