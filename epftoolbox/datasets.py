@@ -77,11 +77,15 @@ def read_data(path, dataset='PJM', years_test=2, begin_test_date=None, end_test_
         except ValueError:
             print("Provided values for dates are not valid")
 
-        if begin_test_date.hours != 0:
+        if begin_test_date.hour != 0:
             raise Exception("Starting date for test dataset should be midnight") 
-        if end_test_date.hours != 23:
-            raise Exception("End date for test dataset should be at 23h") 
+        if end_test_date.hour != 23:
+            if end_test_date.hour == 0:
+                end_test_date = end_test_date + pd.Timedelta(hours=23)
+            else:
+                raise Exception("End date for test dataset should be at 0h or 23h") 
 
+        print('Test datasets: {} - {}'.format(begin_test_date, end_test_date))
         df_train = data.loc[:begin_test_date - pd.Timedelta(hours=1), :]
         df_test = data.loc[begin_test_date:end_test_date, :]
 
