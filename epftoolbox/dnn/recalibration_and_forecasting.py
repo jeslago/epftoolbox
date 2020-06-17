@@ -3,12 +3,10 @@ import numpy as np
 import pickle as pc
 import os
 
-from epftoolbox.dnn.model import DNN
-from epftoolbox.wrangling import scaling, createAndSplitXYs
+from epftoolbox.dnn.model import DNN, build_and_split_XYs
+from epftoolbox.wrangling import scaling
 from epftoolbox.datasets import read_data
 from epftoolbox.metrics import MAE, sMAPE
-
-
 
 class DNNRecalibration(object):
 
@@ -57,7 +55,7 @@ class DNNRecalibration(object):
 
         return Xtrain, Xval, Xtest, Ytrain, Yval
 
-    def recalibrate(self, Xtrain, Ytrain, Xval, Yval):
+    def recalibrate(self, Xtrain, Ytrain, Xval, Yval, Xtest):
 
         # Initialize model
         neurons = [int(self.best_hyperparameters['neurons' + str(k)]) for k in range(1, self.nlayers + 1)
@@ -65,7 +63,7 @@ class DNNRecalibration(object):
             
         np.random.seed(int(self.best_hyperparameters['seed']))
 
-        self.model = DNN(neurons=neurons, Nfeatures=Xtrain.shape[-1], 
+        model = DNN(neurons=neurons, Nfeatures=Xtrain.shape[-1], 
                          dropout=self.best_hyperparameters['dropout'], BN=self.best_hyperparameters['BN'], 
                          lr=self.best_hyperparameters['lr'], printOut=False,
                          optimizer='adam', activation=self.best_hyperparameters['activation'],
@@ -74,14 +72,14 @@ class DNNRecalibration(object):
                          lambdaReg=self.best_hyperparameters['lambdal1'],
                          initializer=self.best_hyperparameters['init'])
 
-        self.model.fit(Xtrain, Ytrain, Xval, Yval)
-
-    def predict(self, Xtest):
-
+        model.fit(Xtrain, Ytrain, Xval, Yval)
+        
         # Predicting the current date using recalibrated neural network
-        Yp = self.model.predict(Xtest).squeeze()
+        Yp = model.predict(Xtest).squeeze()
         if self.best_hyperparameters['scaleY'] in ['Norm', 'Norm1', 'Std', 'Median', 'Invariant']:
             Yp = self.scaler.inverse_transform(Yp.reshape(1, -1))
+
+        model.clear_session()
 
         return Yp
 
@@ -140,43 +138,37 @@ class DNNRecalibration(object):
 
         return formatted_hyperparameters
 
+    def recalibrate_and_forecast_next_day(self, df, next_day_date, calibration_window, shuffle_train,
+                                          data_augmentation):
+            
+            # We define the new training dataset considering the last calibration_window years of data 
+            df_train = df.loc[:next_day_date - pd.Timedelta(hours=1)]
+            df_train = df_train.loc[next_day_date - pd.Timedelta(hours=calibration_window * 364 * 24):]
 
-def recalibrate_and_forecast_next_day(df, model, next_day_date, calibration_window, shuffle_train,
-                                      data_augmentation):
-        
-        # We define the new training dataset considering the last calibration_window years of data 
-        df_train = df.loc[:next_day_date - pd.Timedelta(hours=1)]
-        df_train = df_train.loc[next_day_date - pd.Timedelta(hours=calibration_window * 364 * 24):]
+            # We define the test dataset as the next day (they day of interest) plus the last two weeks
+            # in order to be able to build the necessary input features.
+            df_test = df.loc[next_day_date - pd.Timedelta(weeks=2):, :]
 
-        # We define the test dataset as the next day (they day of interest) plus the last two weeks
-        # in order to be able to build the necessary input features. Note that prices for the
-        # next day do not exist but are NaN values
-        df_test = df.loc[next_day_date - pd.Timedelta(weeks=2):, :]
+            # Generating training, validation, and test input and outpus. For the test dataset,
+            # even though the dataframe contains 15 days of data (next day + last 2 weeks),
+            # we provide as parameter the date of interest so that Xtest and Ytest only reflect that
+            Xtrain, Ytrain, Xval, Yval, Xtest, _, _ = \
+                build_and_split_XYs(dfTrain=df_train, features=self.best_hyperparameters, 
+                                  shuffle_train=shuffle_train, dfTest=df_test, date_test=next_day_date,
+                                  data_augmentation=data_augmentation, 
+                                  n_exogenous_inputs=len(df_train.columns) - 1)
 
-        # Generating training, validation, and test input and outpus. For the test dataset,
-        # even though the dataframe contains 15 days of data (next day + last 2 weeks),
-        # we provide as parameter the date of interest so that Xtest and Ytest only reflect that
-        Xtrain, Ytrain, Xval, Yval, Xtest, _, _ = \
-            createAndSplitXYs(dfTrain=df_train, features=model.best_hyperparameters, 
-                              shuffle_train=shuffle_train, dfTest=df_test, date_test=next_day_date,
-                              data_augmentation=data_augmentation, 
-                              n_exogenous_inputs=len(df_train.columns) - 1)
+            # Normalizing the input and outputs if needed
+            # Normalizing the input and outputs if needed
+            Xtrain, Xval, Xtest, Ytrain, Yval = \
+                self.regularize_data(Xtrain=Xtrain, Xval=Xval, Xtest=Xtest, Ytrain=Ytrain, Yval=Yval)
 
-        # Normalizing the input and outputs if needed
-        # Normalizing the input and outputs if needed
-        Xtrain, Xval, Xtest, Ytrain, Yval = \
-            model.regularize_data(Xtrain=Xtrain, Xval=Xval, Xtest=Xtest, Ytrain=Ytrain, Yval=Yval)
+            # Recalibrating the neural network and extracting the prediction
+            Yp = self.recalibrate(Xtrain=Xtrain, Ytrain=Ytrain, Xval=Xval, Yval=Yval, Xtest=Xtest)
 
-        # Recalibrating/training the neural network
-        model.recalibrate(Xtrain=Xtrain, Ytrain=Ytrain, Xval=Xval, Yval=Yval)
+            return Yp
 
-        # Predicting the current date using recalibrated neural network
-        Yp = model.predict(Xtest).squeeze()
-
-        return model, Yp
-
-
-def evaluate_model_in_test_dataset(experiment_id, hyperparameter_files='./experimental_files/', 
+def evaluate_dnn_in_test_dataset(experiment_id, hyperparameter_files='./experimental_files/', 
                                 path_datasets='./datasets/', path_recalibration_files='./experimental_files/', 
                                 nlayers=2, dataset='PJM', years_test=2, shuffle_train=0, 
                                 data_augmentation=0, calibration_window=4, new_recalibration=0, 
@@ -189,7 +181,7 @@ def evaluate_model_in_test_dataset(experiment_id, hyperparameter_files='./experi
 
     # Defining unique name to save the forecast
     forecast_file_name = path_recalibration_files + 'fc_nl' + str(nlayers) + '_dat' + str(dataset) + \
-                       '_CW' + str(years_test) + '_SF' + str(shuffle_train) + \
+                       '_YT' + str(years_test) + '_SF' + str(shuffle_train) + \
                        '_DA' * data_augmentation + '_CW' + str(calibration_window) + \
                        '_' + str(experiment_id)
 
@@ -237,10 +229,9 @@ def evaluate_model_in_test_dataset(experiment_id, hyperparameter_files='./experi
 
         # Recalibrating the model with the most up-to-date available data and making a prediction
         # for the next day
-        model, Yp = recalibrate_and_forecast_next_day(
-            df=data_available, model=model, next_day_date=date, 
-            calibration_window=calibration_window, shuffle_train=shuffle_train, 
-            data_augmentation=data_augmentation)
+        Yp = model.recalibrate_and_forecast_next_day(
+            df=data_available, next_day_date=date, calibration_window=calibration_window, 
+            shuffle_train=shuffle_train, data_augmentation=data_augmentation)
 
         # Saving the current prediction
         forecast.loc[date, :] = Yp
