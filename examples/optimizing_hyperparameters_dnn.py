@@ -1,11 +1,11 @@
-from epftoolbox.dnn.hyperparameter_optimization import hyperparameter_optimizer
+from epftoolbox.models import hyperparameter_optimizer
 
 # Number of layers in DNN
 nlayers = 2
 
 # Market under study. If it not one of the standard ones, the file name
 # has to be provided, where the file has to be a csv file
-dataset = 'PJM'
+dataset = 'NP'
 
 # Number of years (a year is 364 days) in the test dataset.
 years_test = 2

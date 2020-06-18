@@ -4,12 +4,13 @@ import pandas as pd
 from statsmodels.robust import mad
 
 from sklearn.linear_model import LassoLarsIC, Lasso
-from epftoolbox.wrangling import scaling
-from epftoolbox.datasets import read_data
-from epftoolbox.metrics import MAE, sMAPE
-
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
+
+from epftoolbox.data import scaling
+from epftoolbox.data import read_data
+from epftoolbox.evaluation import MAE, sMAPE
+
 
 class LEAR(object):
 

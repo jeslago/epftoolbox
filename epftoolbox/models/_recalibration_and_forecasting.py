@@ -3,10 +3,10 @@ import numpy as np
 import pickle as pc
 import os
 
-from epftoolbox.dnn.model import DNN, build_and_split_XYs
-from epftoolbox.wrangling import scaling
-from epftoolbox.datasets import read_data
-from epftoolbox.metrics import MAE, sMAPE
+from epftoolbox.models import DNN, build_and_split_XYs
+from epftoolbox.data import scaling
+from epftoolbox.data import read_data
+from epftoolbox.evaluation import MAE, sMAPE
 
 class DNNRecalibration(object):
 

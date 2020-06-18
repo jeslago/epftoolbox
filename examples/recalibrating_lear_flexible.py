@@ -2,9 +2,9 @@ import pandas as pd
 import numpy as np
 import argparse
 
-from epftoolbox.datasets import read_data
-from epftoolbox.metrics import MAE, sMAPE
-from epftoolbox.lear import LEAR
+from epftoolbox.data import read_data
+from epftoolbox.evaluation import MAE, sMAPE
+from epftoolbox.models import LEAR
 
 # ------------------------------ EXTERNAL PARAMETERS ------------------------------------#
 

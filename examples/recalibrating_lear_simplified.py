@@ -1,4 +1,4 @@
-from epftoolbox.lear import evaluate_lear_in_test_dataset
+from epftoolbox.models import evaluate_lear_in_test_dataset
 
 
 # Market under study. If it not one of the standard ones, the file name

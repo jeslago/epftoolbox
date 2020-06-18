@@ -1,4 +1,4 @@
-from epftoolbox.dnn.recalibration_and_forecasting import evaluate_dnn_in_test_dataset
+from epftoolbox.models import evaluate_dnn_in_test_dataset
 
 # Number of layers in DNN
 nlayers = 2

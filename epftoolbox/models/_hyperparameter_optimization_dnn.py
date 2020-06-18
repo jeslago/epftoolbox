@@ -3,14 +3,14 @@ import numpy as np
 from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
 import pickle as pc
 from datetime import datetime
-from epftoolbox.dnn.model import DNN, build_and_split_XYs
-from epftoolbox.wrangling import scaling
-from epftoolbox.datasets import read_data
-from epftoolbox.metrics import MAE, sMAPE
+from epftoolbox.models import DNN, build_and_split_XYs
+from epftoolbox.data import scaling
+from epftoolbox.data import read_data
+from epftoolbox.evaluation import MAE, sMAPE
 from functools import partial
 import os
 
-def build_space(nlayer, data_augmentation, n_exogenous_inputs):
+def _build_space(nlayer, data_augmentation, n_exogenous_inputs):
 
     # Defining the hyperparameter space. First the neural net hyperparameters,
     # later the input features
@@ -65,7 +65,7 @@ def build_space(nlayer, data_augmentation, n_exogenous_inputs):
     return space
 
 
-def hyperopt_objective(hyperparameters, trials, trials_file_name, max_evals, nlayers, dfTrain, dfTest, 
+def _hyperopt_objective(hyperparameters, trials, trials_file_name, max_evals, nlayers, dfTrain, dfTest, 
                        path_experiment_files, shuffle_train, dataset, data_augmentation, 
                        calibration_window, n_exogenous_inputs):
 
@@ -230,14 +230,14 @@ def hyperparameter_optimizer(path_datasets='./datasets/', path_experiment_files=
     n_exogenous_inputs = len(dfTrain.columns) - 1
 
     # Build hyperparamerter search space. This includes hyperparameter and features
-    space = build_space(nlayers, data_augmentation, n_exogenous_inputs)
+    space = _build_space(nlayers, data_augmentation, n_exogenous_inputs)
 
 
     # Perform hyperparameter optimization
-    fmin_objective = partial(hyperopt_objective, trials=trials, trials_file_name=trials_file_name, 
+    fmin_objective = partial(_hyperopt_objective, trials=trials, trials_file_name=trials_file_name, 
                              max_evals=max_evals, nlayers=nlayers, dfTrain=dfTrain, dfTest=dfTest, 
                              path_experiment_files=path_experiment_files, shuffle_train=shuffle_train, 
                              dataset=dataset, data_augmentation=data_augmentation, 
                              calibration_window=calibration_window,n_exogenous_inputs=n_exogenous_inputs)
 
-    fmin(fmin_objective, space=space, algo=tpe.suggest, max_evals=max_evals, trials=trials)
+    fmin(fmin_objective, space=space, algo=tpe.suggest, max_evals=max_evals, trials=trials, verbose=False)

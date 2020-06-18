@@ -7,7 +7,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, Dropout, AlphaDropout, BatchNormalization
 from tensorflow.keras.regularizers import l2, l1
 from tensorflow.keras.layers import LeakyReLU, PReLU
-from epftoolbox.metrics import MAE
+from epftoolbox.evaluation import MAE
 import tensorflow.keras.backend as K
 
 class DNN(object):
