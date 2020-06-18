@@ -250,15 +250,13 @@ def evaluate_lear_in_test_dataset(path_datasets='./datasets/',
                                                      calibration_window=calibration_window)
         # Saving the current prediction
         forecast.loc[date, :] = Yp
-        import ipdb
-        ipdb.set_trace()
 
         # Computing metrics up-to-current-date
         mae = np.mean(MAE(forecast.loc[:date].values.squeeze(), real_values.loc[:date].values)) 
         smape = np.mean(sMAPE(forecast.loc[:date].values.squeeze(), real_values.loc[:date].values)) * 100
 
         # Pringint information
-        print('{} - sMAPE: {:.2f}%  |  MAE: {:.2f}'.format(str(date)[:10], smape, mae))
+        print('{} - sMAPE: {:.2f}%  |  MAE: {:.3f}'.format(str(date)[:10], smape, mae))
 
         # Saving forecast
         forecast.to_csv(forecast_file_name + '.csv')
