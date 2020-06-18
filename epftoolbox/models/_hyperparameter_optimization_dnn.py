@@ -65,9 +65,9 @@ def _build_space(nlayer, data_augmentation, n_exogenous_inputs):
     return space
 
 
-def _hyperopt_objective(hyperparameters, trials, trials_file_name, max_evals, nlayers, dfTrain, dfTest, 
-                       path_experiment_files, shuffle_train, dataset, data_augmentation, 
-                       calibration_window, n_exogenous_inputs):
+def _hyperopt_objective(hyperparameters, trials, trials_file_path, max_evals, nlayers, dfTrain, dfTest, 
+                        path_hyperparameters_folder, shuffle_train, dataset, data_augmentation, 
+                        calibration_window, n_exogenous_inputs):
 
     # Re-defining the training dataset based on the calibration window. The calibration window
     # can be given as an external parameter. If the value 0 is given, the calibration window
@@ -76,7 +76,7 @@ def _hyperopt_objective(hyperparameters, trials, trials_file_name, max_evals, nl
                              pd.Timedelta(hours=1):]
 
     # Saving hyperoptimization state and printing message
-    pc.dump(trials, open(trials_file_name, "wb"))
+    pc.dump(trials, open(trials_file_path, "wb"))
     if trials.losses()[0] is not None:
 
         MAEVal = trials.best_trial['result']['MAE Val']
@@ -151,7 +151,8 @@ def _hyperopt_objective(hyperparameters, trials, trials_file_name, max_evals, nl
     return return_values
 
 
-def hyperparameter_optimizer(path_datasets='./datasets/', path_experiment_files='./experimental_files/', 
+def hyperparameter_optimizer(path_datasets_folder=os.path.join('.', 'datasets'), 
+                             path_hyperparameters_folder=os.path.join('.', 'experimental_files'), 
                              new_hyperopt=1, max_evals=1500, nlayers=2, dataset='PJM', years_test=2, 
                              calibration_window=4, shuffle_train=1, data_augmentation=0,
                              experiment_id=None, begin_test_date=None, end_test_date=None):
@@ -159,9 +160,9 @@ def hyperparameter_optimizer(path_datasets='./datasets/', path_experiment_files=
     """ Main fucntion to perform hyperparameter optimization
     
     Args:
-        path_datasets (str, optional): Path to read and store datasets
+        path_datasets_folder (str, optional): Path to read and store datasets
         
-        path_experiment_files (str, optional): Path to read and store trials files from hyperopt
+        path_hyperparameters_folder (str, optional): Path to read and store trials files from hyperopt
         
         new_hyperopt (bool, optional): Boolean that decides whether to start a new hyperparameter optimization
         
@@ -197,12 +198,9 @@ def hyperparameter_optimizer(path_datasets='./datasets/', path_experiment_files=
 
     """
 
-    # Checking if provided directories exist and if not create them
-    if not os.path.exists(path_datasets):
-        os.makedirs(path_datasets)
-    
-    if not os.path.exists(path_experiment_files):
-        os.makedirs(path_experiment_files)
+    # Checking if provided directory for hyperparameter exists and if not create it
+    if not os.path.exists(path_hyperparameters_folder):
+        os.makedirs(path_hyperparameters_folder)
 
     if experiment_id is None:
         experiment_id = datetime.now().strftime("%d-%m-%Y_%H:%M:%S")
@@ -210,21 +208,23 @@ def hyperparameter_optimizer(path_datasets='./datasets/', path_experiment_files=
         experiment_id = experiment_id
 
     # Defining unique trials file name (this is an unique identifier)
-    trials_file_name = path_experiment_files + 'hyper_nl' + str(nlayers) + '_dat' + str(dataset) + \
+    trials_file_name = 'DNN_hyperparameters_nl' + str(nlayers) + '_dat' + str(dataset) + \
                        '_YT' + str(years_test) + '_SF' * (shuffle_train) + \
                        '_DA' * (data_augmentation) + '_CW' + str(calibration_window) + \
                        '_' + str(experiment_id)
+
+    trials_file_path = os.path.join(path_hyperparameters_folder, trials_file_name)
 
     # If hyperparameter optimization starts from scratch, new trials object is created. If not,
     # we read existing trials object
     if new_hyperopt:
         trials = Trials()
     else:
-        trials = pc.load(open(trials_file_name, "rb"))
+        trials = pc.load(open(trials_file_path, "rb"))
 
 
     # Generate training and test datasets
-    dfTrain, dfTest = read_data(dataset=dataset, years_test=years_test, path=path_datasets,
+    dfTrain, dfTest = read_data(dataset=dataset, years_test=years_test, path=path_datasets_folder,
                                 begin_test_date=begin_test_date, end_test_date=end_test_date)
 
     n_exogenous_inputs = len(dfTrain.columns) - 1
@@ -234,9 +234,9 @@ def hyperparameter_optimizer(path_datasets='./datasets/', path_experiment_files=
 
 
     # Perform hyperparameter optimization
-    fmin_objective = partial(_hyperopt_objective, trials=trials, trials_file_name=trials_file_name, 
+    fmin_objective = partial(_hyperopt_objective, trials=trials, trials_file_path=trials_file_path, 
                              max_evals=max_evals, nlayers=nlayers, dfTrain=dfTrain, dfTest=dfTest, 
-                             path_experiment_files=path_experiment_files, shuffle_train=shuffle_train, 
+                             path_hyperparameters_folder=path_hyperparameters_folder, shuffle_train=shuffle_train, 
                              dataset=dataset, data_augmentation=data_augmentation, 
                              calibration_window=calibration_window,n_exogenous_inputs=n_exogenous_inputs)
 

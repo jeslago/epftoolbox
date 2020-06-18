@@ -2,18 +2,32 @@
 import numpy as np
 import pandas as pd
 from statsmodels.robust import mad
+import os
 
 from sklearn.linear_model import LassoLarsIC, Lasso
-from sklearn.utils._testing import ignore_warnings
-from sklearn.exceptions import ConvergenceWarning
-
 from epftoolbox.data import scaling
 from epftoolbox.data import read_data
 from epftoolbox.evaluation import MAE, sMAPE
 
+from sklearn.utils._testing import ignore_warnings
+from sklearn.exceptions import ConvergenceWarning
 
 class LEAR(object):
-
+    """
+    Class to build a LEAR model, recalibrate it, and use it to predict DA electricity prices
+    
+    Parameters
+    ----------
+    calibration_window : int, optional
+        Calibration window (in days) for the LEAR model
+    
+    Attributes
+    ----------
+    calibration_window : int
+        Calibration window (in days) for the LEAR model
+    
+    """
+    
     def __init__(self, calibration_window=364 * 3):
 
         # Calibration window in hours
@@ -22,12 +36,34 @@ class LEAR(object):
     # Ignore convergence warnings from scikit-learn LASSO module
     @ignore_warnings(category=ConvergenceWarning)
     def recalibrate(self, Xtrain, Ytrain, Xtest):
+        """
+        Function to recalibrate the LEAR model. It uses a training (Xtrain, Ytrain) pair for 
+        recalibration, and it uses the input Xtest to make the next prediction 
+        
+        Parameters
+        ----------
+        Xtrain : numpy.array
+            Input in training dataset. It should be of size [n,m] where n is the number of days
+            in the training dataset and m the number of input features
+        
+        Ytrain : numpy.array
+            Output in training dataset. It should be of size [n,24] where n is the number of days 
+            in the training dataset and 24 are the 24 prices of each day
+        
+        Xtest : numpy.array
+            Input for the testing dataset. It should be of size [1,m]
+        
+        Returns
+        -------
+        The prediction of day-ahead prices after recalibrating the model        
+        
+        """
 
         # Predefining predicted prices
         Yp = np.zeros(24)
 
         # # Applying Invariant, aka asinh-median transformation to the prices
-        [Ytrain], self.scaler = scaling([Ytrain], 'Invariant')
+        [Ytrain], scaler = scaling([Ytrain], 'Invariant')
 
         # # Rescaling all inputs except dummies (7 last features)
         [Xtrain_no_dummies, Xtest_no_dummies], _ = scaling([Xtrain[:, :-7], Xtest[:, :-7]], 'Invariant')
@@ -48,7 +84,7 @@ class LEAR(object):
             # Predicting test dataset and saving
             Yp[h] = model.predict(Xtest)
         
-        Yp = self.scaler.inverse_transform(Yp.reshape(1, -1))
+        Yp = scaler.inverse_transform(Yp.reshape(1, -1))
 
         return Yp
 
@@ -56,14 +92,23 @@ class LEAR(object):
         
         """
         Method that generates the X,Y arrays for training and testing based on
-         the pandas train and test datasets
+        pandas dataframes
         
-        Args:
-            df_train (TYPE): Pandas dataframe containing the training data
-            df_test (TYPE): Pandas dataframe containing the test data
-            date_test (None, optional): If given, then the test dataset is only built for that date
-        Returns:
-            TYPE: Description
+        Parameters
+        ----------
+        df_train : pandas.DataFrame
+            Pandas dataframe containing the training data
+        
+        df_test : pandas.DataFrame
+            Pandas dataframe containing the test data
+        
+        date_test : datetime, optional
+            If given, then the test dataset is only built for that date
+        
+        Returns
+        -------
+        [Xtrain, Ytrain, Xtest] as the list containing the (X,Y) input/output pairs for training, 
+        and the input for testing
         """
 
         # Checking that the first index in the dataframes corresponds with the hour 00:00 
@@ -191,7 +236,29 @@ class LEAR(object):
 
 
     def recalibrate_and_forecast_next_day(self, df, calibration_window, next_day_date):
-            
+        """
+        Module that recalibrates a LEAR model and makes a day-ahead prediction
+        # using a dataframe of past data, the calibration window of the LEAR model,
+        and the date of the day-ahead
+        
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            Dataframe of historical data containing prices and N exogenous inputs. 
+            The index of the dataframe should be dates with hourly frequency. The columns 
+            should have the following names ['Price', 'Exogenous 1', 'Exogenous 2', ...., 'Exogenous N']
+        
+        calibration_window : int
+            Calibration window (in days) for the LEAR model
+        
+        next_day_date : datetime
+            Date of the day-ahead
+        
+        Returns
+        -------
+            The prediction of day-ahead prices
+        """
+
         # We define the new training dataset and test datasets 
         df_train = df.loc[:next_day_date - pd.Timedelta(hours=1)]
         # Limiting the training dataset to the calibration window
@@ -212,19 +279,69 @@ class LEAR(object):
         return Yp
 
 
-def evaluate_lear_in_test_dataset(path_datasets='./datasets/', 
-                                  path_recalibration_files='./experimental_files/',
+def evaluate_lear_in_test_dataset(path_datasets_folder=os.path.join('.', 'datasets'), 
+                                  path_recalibration_folder=os.path.join('.', 'experimental_files'),
                                   dataset='PJM', years_test=2, calibration_window=364 * 3, 
                                   begin_test_date=None, end_test_date=None):
+    """
+    Function that allows easy evaluation of the LEAR model in a given test dataset. The test
+    dataset is simply defined by a market name, and the test dataset by its dates. This function
+    imports the dataset associated with the market name and performs a recalibration and evaluation
+    of the LEAR model in the given dates.
+    
+    Parameters
+    ----------
+    path_datasets_folder : str, optional
+        path where the datasets are stored or, if they do not exist yet,
+        the path where the datasets are to be stored
+    
+    path_recalibration_folder : str, optional
+        path to save the files of the experiment dataset (str, optional
+    
+    dataset : str, optional
+        Name of the dataset/market under study. If it is one one of the standard markets, 
+        i.e. PJM, NP, BE, FR, or DE, the dataset is automatically downloaded. If the name
+        is different, a dataset with a csv format should be place in the path_datasets_folder
 
-        
+    years_test : int, optional
+        Number of years (a year is 364 days) in the test dataset. It is only used if 
+        the arguments begin_test_date and end_test_date are not provided.
+    
+    calibration_window : int, optional
+        Number of days used in the training dataset for recalibration
+    
+    begin_test_date : datetime/str, optional
+        Optional parameter to select the test dataset. Used in combination with the argument
+        end_test_date. If either of them is not provided, the test dataset is built using the 
+        years_test argument. begin_test_date should either be a string with the following 
+        format d/m/Y H:M, or a datetime object
+    
+    end_test_date : datetime/str, optional
+        Optional parameter to select the test dataset. Used in combination with the argument
+        begin_test_date. If either of them is not provided, the test dataset is built using the 
+        years_test argument. end_test_date should either be a string with the following 
+        format d/m/Y H:M, or a datetime object       
+    
+    Returns
+    -------
+        A dataframe with all the predictions in the test dataset. The dataframe is also
+        written to path_recalibration_folder
+    """
+
+    # Checking if provided directory for recalibration exists and if not create it
+    if not os.path.exists(path_recalibration_folder):
+        os.makedirs(path_recalibration_folder)
+
     # Defining train and testing data
-    df_train, df_test = read_data(dataset=dataset, years_test=years_test, path=path_datasets,
+    df_train, df_test = read_data(dataset=dataset, years_test=years_test, path=path_datasets_folder,
                                   begin_test_date=begin_test_date, end_test_date=end_test_date)
 
     # Defining unique name to save the forecast
-    forecast_file_name = path_recalibration_files + 'fc_nl' + '_dat' + str(dataset) + \
-                       '_YT' + str(years_test) + '_CW' + str(calibration_window)
+    forecast_file_name = 'LEAR_forecast' + '_dat' + str(dataset) + '_YT' + str(years_test) + \
+                         '_CW' + str(calibration_window) + '.csv'
+
+    forecast_file_path = os.path.join(path_recalibration_folder, forecast_file_name)
+
 
     # Defining empty forecast array and the real values to be predicted in a more friendly format
     forecast = pd.DataFrame(index=df_test.index[::24], columns=['h' + str(k) for k in range(24)])
@@ -260,4 +377,6 @@ def evaluate_lear_in_test_dataset(path_datasets='./datasets/',
         print('{} - sMAPE: {:.2f}%  |  MAE: {:.3f}'.format(str(date)[:10], smape, mae))
 
         # Saving forecast
-        forecast.to_csv(forecast_file_name + '.csv')
+        forecast.to_csv(forecast_file_path)
+
+    return forecast

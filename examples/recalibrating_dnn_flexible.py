@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import argparse
+import os
 
 from epftoolbox.data import read_data
 from epftoolbox.evaluation import MAE, sMAPE
@@ -63,19 +64,21 @@ experiment_id = args.experiment_id
 begin_test_date = args.begin_test_date
 end_test_date = args.end_test_date
 
-path_datasets = "./datasets/"
-path_recalibration_files = "./experimental_files/"
-hyperparameter_files = "./experimental_files/"
+path_datasets_folder = os.path.join('.', 'datasets')
+path_recalibration_folder = os.path.join('.', 'experimental_files')
+path_hyperparameter_folder = os.path.join('.', 'experimental_files')
     
 # Defining train and testing data
-df_train, df_test = read_data(dataset=dataset, years_test=years_test, path=path_datasets,
+df_train, df_test = read_data(dataset=dataset, years_test=years_test, path=path_datasets_folder,
                               begin_test_date=begin_test_date, end_test_date=end_test_date)
 
 # Defining unique name to save the forecast
-forecast_file_name = path_recalibration_files + 'fc_nl' + str(nlayers) + '_dat' + str(dataset) + \
+forecast_file_name = 'fc_nl' + str(nlayers) + '_dat' + str(dataset) + \
                    '_YT' + str(years_test) + '_SF' + str(shuffle_train) + \
                    '_DA' * data_augmentation + '_CW' + str(calibration_window) + \
-                   '_' + str(experiment_id)
+                   '_' + str(experiment_id) + '.csv'
+
+forecast_file_path = os.path.join(path_recalibration_folder, forecast_file_name)
 
 # Defining empty forecast array and the real values to be predicted in a more friendly format
 forecast = pd.DataFrame(index=df_test.index[::24], columns=['h' + str(k) for k in range(24)])
@@ -86,7 +89,7 @@ real_values = pd.DataFrame(real_values, index=forecast.index, columns=forecast.c
 # existing files and print metrics 
 if not new_recalibration:
     # Import existinf forecasting file
-    forecast = pd.read_csv(forecast_file_name + '.csv', index_col=0)
+    forecast = pd.read_csv(forecast_file_path, index_col=0)
     forecast.index = pd.to_datetime(forecast.index)
 
     # Reading dates to still be forecasted by checking NaN values
@@ -98,14 +101,14 @@ if not new_recalibration:
 
         mae = np.mean(MAE(forecast.values.squeeze(), real_values.values))
         smape = np.mean(sMAPE(forecast.values.squeeze(), real_values.values)) * 100
-        print('{} - MAE: {:.2f} | sMAPE: {:.2f}%'.format('Final metrics', mae, smape))
+        print('{} - sMAPE: {:.2f}%  |  MAE: {:.3f}'.format('Final metrics', smape, mae))
     
 else:
     forecast_dates = forecast.index
 
 model = DNNRecalibration(
-    experiment_id=experiment_id, hyperparameter_files=hyperparameter_files, nlayers=nlayers, dataset=dataset, 
-    years_test=years_test, shuffle_train=shuffle_train, data_augmentation=data_augmentation,
+    experiment_id=experiment_id, path_hyperparameter_folder=path_hyperparameter_folder, nlayers=nlayers, 
+    dataset=dataset, years_test=years_test, shuffle_train=shuffle_train, data_augmentation=data_augmentation,
     calibration_window=calibration_window)
 
 
@@ -134,7 +137,7 @@ for date in forecast_dates:
     smape = np.mean(sMAPE(forecast.loc[:date].values.squeeze(), real_values.loc[:date].values)) * 100
 
     # Pringint information
-    print('{} - sMAPE: {:.2f}%  |  MAE: {:.2f}'.format(str(date)[:10], smape, mae))
+    print('{} - sMAPE: {:.2f}%  |  MAE: {:.3f}'.format(str(date)[:10], smape, mae))
 
     # Saving forecast
-    forecast.to_csv(forecast_file_name + '.csv')
+    forecast.to_csv(forecast_file_path)

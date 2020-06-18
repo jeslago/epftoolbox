@@ -1,4 +1,5 @@
 from epftoolbox.models import evaluate_dnn_in_test_dataset
+import os
 
 # Number of layers in DNN
 nlayers = 2
@@ -32,13 +33,14 @@ experiment_id = 1
 begin_test_date = '27/12/2016'
 end_test_date = '01/03/2017'
 
-path_datasets = "./datasets/"
-path_recalibration_files = "./experimental_files/"
-path_hyperparameter_files = "./experimental_files/"
+# Set up the paths for saving data (this are the defaults for the library)
+path_datasets_folder = os.path.join('.', 'datasets')
+path_recalibration_folder = os.path.join('.', 'experimental_files')
+path_hyperparameter_folder = os.path.join('.', 'experimental_files')
 
-evaluate_dnn_in_test_dataset(experiment_id, hyperparameter_files=path_hyperparameter_files, 
-                               path_datasets=path_datasets, shuffle_train=shuffle_train, 
-                               path_recalibration_files=path_recalibration_files, 
+evaluate_dnn_in_test_dataset(experiment_id, path_hyperparameter_folder=path_hyperparameter_folder, 
+                               path_datasets_folder=path_datasets_folder, shuffle_train=shuffle_train, 
+                               path_recalibration_folder=path_recalibration_folder, 
                                nlayers=nlayers, dataset=dataset, years_test=years_test, 
                                data_augmentation=data_augmentation, calibration_window=calibration_window, 
                                new_recalibration=new_recalibration, begin_test_date=begin_test_date, 

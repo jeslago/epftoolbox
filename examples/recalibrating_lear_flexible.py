@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import argparse
+import os
 
 from epftoolbox.data import read_data
 from epftoolbox.evaluation import MAE, sMAPE
@@ -41,17 +42,20 @@ calibration_window = args.calibration_window
 begin_test_date = args.begin_test_date
 end_test_date = args.end_test_date
 
-path_datasets = "./datasets/"
-path_recalibration_files = "./experimental_files/"
+path_datasets_folder = os.path.join('.', 'datasets')
+path_recalibration_folder = os.path.join('.', 'experimental_files')
     
     
 # Defining train and testing data
-df_train, df_test = read_data(dataset=dataset, years_test=years_test, path=path_datasets,
+df_train, df_test = read_data(dataset=dataset, years_test=years_test, path=path_datasets_folder,
                               begin_test_date=begin_test_date, end_test_date=end_test_date)
 
 # Defining unique name to save the forecast
-forecast_file_name = path_recalibration_files + 'fc_nl' + '_dat' + str(dataset) + \
-                   '_YT' + str(years_test) + '_CW' + str(calibration_window)
+forecast_file_name = 'fc_nl' + '_dat' + str(dataset) + '_YT' + str(years_test) + \
+                     '_CW' + str(calibration_window) + '.csv'
+
+forecast_file_path = os.path.join(path_recalibration_folder, forecast_file_name)
+
 
 # Defining empty forecast array and the real values to be predicted in a more friendly format
 forecast = pd.DataFrame(index=df_test.index[::24], columns=['h' + str(k) for k in range(24)])
@@ -87,4 +91,4 @@ for date in forecast_dates:
     print('{} - sMAPE: {:.2f}%  |  MAE: {:.3f}'.format(str(date)[:10], smape, mae))
 
     # Saving forecast
-    forecast.to_csv(forecast_file_name + '.csv')
+    forecast.to_csv(forecast_file_path)

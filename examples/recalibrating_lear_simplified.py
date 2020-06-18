@@ -1,5 +1,5 @@
 from epftoolbox.models import evaluate_lear_in_test_dataset
-
+import os
 
 # Market under study. If it not one of the standard ones, the file name
 # has to be provided, where the file has to be a csv file
@@ -18,10 +18,10 @@ calibration_window = 364 * 4
 begin_test_date = None
 end_test_date = None
 
-path_datasets = "./datasets/"
-path_recalibration_files = "./experimental_files/"
+path_datasets_folder = os.path.join('.', 'datasets')
+path_recalibration_folder = os.path.join('.', 'experimental_files')
     
-evaluate_lear_in_test_dataset(path_recalibration_files=path_recalibration_files, 
-                             path_datasets=path_datasets, dataset=dataset, years_test=years_test, 
+evaluate_lear_in_test_dataset(path_recalibration_folder=path_recalibration_folder, 
+                             path_datasets_folder=path_datasets_folder, dataset=dataset, years_test=years_test, 
                              calibration_window=calibration_window, begin_test_date=begin_test_date, 
                              end_test_date=end_test_date)

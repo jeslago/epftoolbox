@@ -10,14 +10,15 @@ from epftoolbox.evaluation import MAE, sMAPE
 
 class DNNRecalibration(object):
 
-    def __init__(self, experiment_id, hyperparameter_files='./experimental_files/', nlayers=2, dataset='PJM', 
-                 years_test=2, shuffle_train=0, data_augmentation=0, calibration_window=4):
+    def __init__(self, experiment_id, path_hyperparameter_folder=os.path.join('.', 'experimental_files'), 
+                 nlayers=2, dataset='PJM', years_test=2, shuffle_train=0, data_augmentation=0, 
+                 calibration_window=4):
 
         """ Main function to recalibrate the DNN model
         
         Args:
             experiment_id (str): Unique identifier to read the trials file
-            hyperparameter_files (str, optional): Path to read trials files from hyperopt
+            path_hyperparameter_folder (str, optional): Path to read trials files from hyperopt
             nlayers (int, optional): Number of layers of the DNN model
             dataset (str, optional): Market under study. If it not one of the standard ones, the file name
             has to be provided, where the file has to be a csv file
@@ -29,8 +30,8 @@ class DNNRecalibration(object):
         """
 
         # Checking if provided directories exist and if not raise exception
-        self.hyperparameter_files = hyperparameter_files
-        if not os.path.exists(self.hyperparameter_files):
+        self.path_hyperparameter_folder = path_hyperparameter_folder
+        if not os.path.exists(self.path_hyperparameter_folder):
             raise Exception('Provided directory for hyperparameter file does not exist')
 
         self.experiment_id = experiment_id
@@ -86,14 +87,15 @@ class DNNRecalibration(object):
     def read_best_hyperapameters(self):
 
         # Defining the trials file name used to extract the optimal hyperparameters
-        trials_file_name = self.hyperparameter_files + 'hyper_nl' + str(self.nlayers) + \
-                           '_dat' + str(self.dataset) + '_YT' + str(self.years_test) + \
-                           '_SF' * (self.shuffle_train) + '_DA' * (self.data_augmentation) + \
-                           '_CW' + str(self.calibration_window) + '_' + str(self.experiment_id)
+        trials_file_name = \
+            'hyper_nl' + str(self.nlayers) + '_dat' + str(self.dataset) + '_YT' + str(self.years_test) + \
+            '_SF' * (self.shuffle_train) + '_DA' * (self.data_augmentation) + \
+            '_CW' + str(self.calibration_window) + '_' + str(self.experiment_id)
 
+        trials_file_path = os.path.join(self.path_hyperparameter_folder, trials_file_name)
 
         # Reading and extracting the best hyperparameters
-        trials = pc.load(open(trials_file_name, "rb"))
+        trials = pc.load(open(trials_file_path, "rb"))
         
         self.best_hyperparameters = self.format_best_trial(trials.best_trial) 
 
@@ -154,9 +156,9 @@ class DNNRecalibration(object):
             # we provide as parameter the date of interest so that Xtest and Ytest only reflect that
             Xtrain, Ytrain, Xval, Yval, Xtest, _, _ = \
                 build_and_split_XYs(dfTrain=df_train, features=self.best_hyperparameters, 
-                                  shuffle_train=shuffle_train, dfTest=df_test, date_test=next_day_date,
-                                  data_augmentation=data_augmentation, 
-                                  n_exogenous_inputs=len(df_train.columns) - 1)
+                                    shuffle_train=shuffle_train, dfTest=df_test, date_test=next_day_date,
+                                    data_augmentation=data_augmentation, 
+                                    n_exogenous_inputs=len(df_train.columns) - 1)
 
             # Normalizing the input and outputs if needed
             # Normalizing the input and outputs if needed
@@ -168,22 +170,30 @@ class DNNRecalibration(object):
 
             return Yp
 
-def evaluate_dnn_in_test_dataset(experiment_id, hyperparameter_files='./experimental_files/', 
-                                path_datasets='./datasets/', path_recalibration_files='./experimental_files/', 
-                                nlayers=2, dataset='PJM', years_test=2, shuffle_train=0, 
-                                data_augmentation=0, calibration_window=4, new_recalibration=0, 
-                                begin_test_date=None, end_test_date=None):
 
-        
+def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.join('.', 'datasets'), 
+                                 path_hyperparameter_folder=os.path.join('.', 'experimental_files'), 
+                                 path_recalibration_folder=os.path.join('.', 'experimental_files'), 
+                                 nlayers=2, dataset='PJM', years_test=2, shuffle_train=0, 
+                                 data_augmentation=0, calibration_window=4, new_recalibration=0, 
+                                 begin_test_date=None, end_test_date=None):
+
+
+    # Checking if provided directory for recalibration exists and if not create it
+    if not os.path.exists(path_recalibration_folder):
+        os.makedirs(path_recalibration_folder)
+
     # Defining train and testing data
-    df_train, df_test = read_data(dataset=dataset, years_test=years_test, path=path_datasets,
+    df_train, df_test = read_data(dataset=dataset, years_test=years_test, path=path_datasets_folder,
                                   begin_test_date=begin_test_date, end_test_date=end_test_date)
-
     # Defining unique name to save the forecast
-    forecast_file_name = path_recalibration_files + 'fc_nl' + str(nlayers) + '_dat' + str(dataset) + \
-                       '_YT' + str(years_test) + '_SF' + str(shuffle_train) + \
-                       '_DA' * data_augmentation + '_CW' + str(calibration_window) + \
-                       '_' + str(experiment_id)
+
+    forecast_file_name = 'DNN_forecast_nl' + str(nlayers) + '_dat' + str(dataset) + \
+                         '_YT' + str(years_test) + '_SF' + str(shuffle_train) + \
+                         '_DA' * data_augmentation + '_CW' + str(calibration_window) + \
+                         '_' + str(experiment_id) + '.csv'
+
+    forecast_file_path = os.path.join(path_recalibration_folder, forecast_file_name)
 
     # Defining empty forecast array and the real values to be predicted in a more friendly format
     forecast = pd.DataFrame(index=df_test.index[::24], columns=['h' + str(k) for k in range(24)])
@@ -194,7 +204,7 @@ def evaluate_dnn_in_test_dataset(experiment_id, hyperparameter_files='./experime
     # existing files and print metrics 
     if not new_recalibration:
         # Import existinf forecasting file
-        forecast = pd.read_csv(forecast_file_name + '.csv', index_col=0)
+        forecast = pd.read_csv(forecast_file_path, index_col=0)
         forecast.index = pd.to_datetime(forecast.index)
 
         # Reading dates to still be forecasted by checking NaN values
@@ -206,13 +216,13 @@ def evaluate_dnn_in_test_dataset(experiment_id, hyperparameter_files='./experime
 
             mae = np.mean(MAE(forecast.values.squeeze(), real_values.values))
             smape = np.mean(sMAPE(forecast.values.squeeze(), real_values.values)) * 100
-            print('{} - MAE: {:.2f} | sMAPE: {:.2f}%'.format('Final metrics', mae, smape))
+            print('{} - sMAPE: {:.2f}%  |  MAE: {:.3f}'.format('Final metrics', smape, mae))
         
     else:
         forecast_dates = forecast.index
 
     model = DNNRecalibration(
-        experiment_id=experiment_id, hyperparameter_files=hyperparameter_files, nlayers=nlayers, 
+        experiment_id=experiment_id, path_hyperparameter_folder=path_hyperparameter_folder, nlayers=nlayers, 
         dataset=dataset, years_test=years_test, shuffle_train=shuffle_train, 
         data_augmentation=data_augmentation, calibration_window=calibration_window)
 
@@ -241,8 +251,8 @@ def evaluate_dnn_in_test_dataset(experiment_id, hyperparameter_files='./experime
         smape = np.mean(sMAPE(forecast.loc[:date].values.squeeze(), real_values.loc[:date].values)) * 100
 
         # Pringint information
-        print('{} - sMAPE: {:.2f}%  |  MAE: {:.2f}'.format(str(date)[:10], smape, mae))
+        print('{} - sMAPE: {:.2f}%  |  MAE: {:.3f}'.format(str(date)[:10], smape, mae))
 
         # Saving forecast
-        forecast.to_csv(forecast_file_name + '.csv')
+        forecast.to_csv(forecast_file_path)
 

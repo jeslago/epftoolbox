@@ -35,8 +35,8 @@ experiment_id = 1
 # Number of iterations for hyperparameter optimization
 max_evals = 1500
 
-path_datasets = "./datasets/"
-path_experiment_files = "./experimental_files/"
+path_datasets_folder = "./datasets/"
+path_hyperparameters_folder = "./experimental_files/"
 
 # Check documentation of the hyperparameter_optimizer for each of the function parameters
 # In this example, we optimize a model for the PJM market.
@@ -44,7 +44,8 @@ path_experiment_files = "./experimental_files/"
 # We start a hyperparameter optimization from scratch. We employ 1500 iterations in hyperopt,
 # 2 years of test data, a DNN with 2 hidden layers, a calibration window of 4 years,
 # we avoid data augmentation,  and we provide an experiment_id equal to 1
-hyperparameter_optimizer(path_datasets=path_datasets, path_experiment_files=path_experiment_files, 
+hyperparameter_optimizer(path_datasets_folder=path_datasets_folder, 
+                         path_hyperparameters_folder=path_hyperparameters_folder, 
                          new_hyperopt=new_hyperopt, max_evals=max_evals, nlayers=nlayers, dataset=dataset, 
                          years_test=years_test, calibration_window=calibration_window, 
                          shuffle_train=shuffle_train, data_augmentation=0, experiment_id=experiment_id,

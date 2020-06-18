@@ -28,11 +28,15 @@ def read_data(path, dataset='PJM', years_test=2, begin_test_date=None, end_test_
 
     """
 
+    # Checking if provided directory exist and if not create it
+    if not os.path.exists(path):
+        os.makedirs(path)
+
     # If dataset is one of the existing open-access ones,
     # they are imported if they exist locally or download from 
     # the repository if they do not
     if dataset in ['PJM', 'NP', 'FR', 'BE', 'DE']:
-        file_path = path + dataset + 'csv'
+        file_path = os.path.join(path, dataset + '.csv')
 
         # The first time this function is called, the datasets
         # are downloaded and saved in a local folder
@@ -43,10 +47,10 @@ def read_data(path, dataset='PJM', years_test=2, begin_test_date=None, end_test_
         else:
             url_dir = 'https://sandbox.zenodo.org/api/files/da5b2c6f-8418-4550-a7d0-7f2497b40f1b/'
             data = pd.read_csv(url_dir + dataset + '.csv', index_col=0)
-            data.to_csv(path + dataset + '.csv')
+            data.to_csv(file_path)
     else:
         try:
-            data = pd.read_csv(path + dataset + '.csv', index_col=0)
+            data = pd.read_csv(file_path, index_col=0)
         except IOError as e:
             raise IOError("%s: %s" % (path, e.strerror))
 
