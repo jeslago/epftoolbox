@@ -1,5 +1,4 @@
-from epftoolbox.dnn.recalibration_and_forecasting import evaluate_model_in_test_dataset
-
+from epftoolbox.dnn.recalibration_and_forecasting import evaluate_dnn_in_test_dataset
 
 # Number of layers in DNN
 nlayers = 2
@@ -30,14 +29,14 @@ experiment_id = 1
 # the test dataset is built using the years_test parameter. They should either be one of
 # the date formats existing in python or a string with the following format
 # "%d/%m/%Y %H:%M"
-begin_test_date = None
-end_test_date = None
+begin_test_date = '27/12/2016'
+end_test_date = '01/03/2017'
 
 path_datasets = "./datasets/"
 path_recalibration_files = "./experimental_files/"
 path_hyperparameter_files = "./experimental_files/"
-    
-evaluate_model_in_test_dataset(experiment_id, hyperparameter_files=path_hyperparameter_files, 
+
+evaluate_dnn_in_test_dataset(experiment_id, hyperparameter_files=path_hyperparameter_files, 
                                path_datasets=path_datasets, shuffle_train=shuffle_train, 
                                path_recalibration_files=path_recalibration_files, 
                                nlayers=nlayers, dataset=dataset, years_test=years_test, 

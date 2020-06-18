@@ -9,7 +9,7 @@ dataset = 'PJM'
 years_test = 2
 
 # Number of days used in the training dataset for recalibration
-calibration_window = 4 * 364
+calibration_window = 364 * 4
 
 # Optional parameters for selecting the test dataset, if either of them is not provided, 
 # the test dataset is built using the years_test parameter. They should either be one of
