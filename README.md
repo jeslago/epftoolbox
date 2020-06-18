@@ -16,12 +16,12 @@ $ pip install .
 Navigate to the examples folder and check the existing examples to get you started. The examples include several applications of the two state-of-the art forecasting model: a deep neural net and the LEAR model.
 
 ## Documentation
-The library is still being built, so no documentation still exists. You can start by lookin at the examples and reading the paper where the library was proposed:
+We are still working on the documentation. You can start in the meantime by looking at the examples and reading the paper where the library was proposed:
 
 Jesus Lago, Grzegorz Marcjasz, Bart De Schutter, Rafał Weron. "Forecasting day-ahead electricity prices: A review of state-of-the-art algorithms, best practices and an open-access benchmark". *Renewable and Sustainable Energy Reviews* (2020). Under Review.
 
 ## Features
-It provides access to a set of tools and benchmarks that can be used to evaluate and compare new methods for electricity price forecasting.
+The library provides easy access to a set of tools and benchmarks that can be used to evaluate and compare new methods for electricity price forecasting.
 
 ### Forecasting models
 The library includes two state-of-the-art forecasting models that can be automatically employed in any day-ahead market without the need of expert knowledge. At the moment, the library comprises two main models:
