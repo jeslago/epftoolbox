@@ -18,7 +18,8 @@ setup(
     author_email='jesuslagogarcia@gmail.com',
     license='GNU AGPLv3',
     python_requires='>=3.5, <4',
-    install_requires=['keras', 'hyperopt', 'tensorflow', 'scikit-learn'],
+    install_requires=['hyperopt>=0.2', 'tensorflow>=2.2', 'scikit-learn>=0.22',
+                      'pandas>=1', 'numpy>=1', 'statsmodels>=0.11'],
     packages=['epftoolbox'],
     classifiers=[
     'Development Status :: 3 - Alpha',
