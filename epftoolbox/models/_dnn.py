@@ -234,7 +234,7 @@ class DNN(object):
 
         return Xtrain, Xval, Xtest, Ytrain, Yval
 
-    def recalibrate(self, Xtrain, Ytrain, Xval, Yval, Xtest):
+    def recalibrate(self, Xtrain, Ytrain, Xval, Yval):
 
         # Initialize model
         neurons = [int(self.best_hyperparameters['neurons' + str(k)]) for k in range(1, self.nlayers + 1)
@@ -242,26 +242,35 @@ class DNN(object):
             
         np.random.seed(int(self.best_hyperparameters['seed']))
 
-        model = DNNModel(neurons=neurons, Nfeatures=Xtrain.shape[-1], 
-                         dropout=self.best_hyperparameters['dropout'], BN=self.best_hyperparameters['BN'], 
-                         lr=self.best_hyperparameters['lr'], printOut=False,
-                         optimizer='adam', activation=self.best_hyperparameters['activation'],
-                         maxEpochsWOImprovement=20, scaler=self.scaler, loss='mae',
-                         regularization=self.best_hyperparameters['reg'], 
-                         lambdaReg=self.best_hyperparameters['lambdal1'],
-                         initializer=self.best_hyperparameters['init'])
+        self.model = DNNModel(neurons=neurons, Nfeatures=Xtrain.shape[-1], 
+                              dropout=self.best_hyperparameters['dropout'], BN=self.best_hyperparameters['BN'], 
+                              lr=self.best_hyperparameters['lr'], printOut=False,
+                              optimizer='adam', activation=self.best_hyperparameters['activation'],
+                              maxEpochsWOImprovement=20, scaler=self.scaler, loss='mae',
+                              regularization=self.best_hyperparameters['reg'], 
+                              lambdaReg=self.best_hyperparameters['lambdal1'],
+                              initializer=self.best_hyperparameters['init'])
 
-        model.fit(Xtrain, Ytrain, Xval, Yval)
+        self.model.fit(Xtrain, Ytrain, Xval, Yval)
         
-        # Predicting the current date using recalibrated neural network
-        Yp = model.predict(Xtest).squeeze()
+    def recalibrate_predict(self, Xtrain, Ytrain, Xval, Yval, Xtest):
+
+        self.recalibrate(Xtrain=Xtrain, Ytrain=Ytrain, Xval=Xval, Yval=Yval)        
+        Yp = self.predict(Xtest=Xtest)
+
+        self.model.clear_session()
+
+        return Yp
+
+    def predict(self, Xtest):
+
+        # Predicting the current date using a recalibrated DNN
+        Yp = self.model.predict(Xtest).squeeze()
         if self.best_hyperparameters['scaleY'] in ['Norm', 'Norm1', 'Std', 'Median', 'Invariant']:
             Yp = self.scaler.inverse_transform(Yp.reshape(1, -1))
 
-        model.clear_session()
-
         return Yp
-        
+
     def read_best_hyperapameters(self):
 
         # Defining the trials file name used to extract the optimal hyperparameters
