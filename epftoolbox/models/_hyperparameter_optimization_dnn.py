@@ -3,7 +3,7 @@ import numpy as np
 from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
 import pickle as pc
 from datetime import datetime
-from epftoolbox.models import DNN, build_and_split_XYs
+from epftoolbox.models import DNNModel, build_and_split_XYs
 from epftoolbox.data import scaling
 from epftoolbox.data import read_data
 from epftoolbox.evaluation import MAE, sMAPE
@@ -114,7 +114,7 @@ def _hyperopt_objective(hyperparameters, trials, trials_file_path, max_evals, nl
     np.random.seed(int(hyperparameters['seed']))
 
     # Initialize model
-    forecaster = DNN(neurons=neurons, Nfeatures=Xtrain.shape[-1], 
+    forecaster = DNNModel(neurons=neurons, Nfeatures=Xtrain.shape[-1], 
                      dropout=hyperparameters['dropout'], BN=hyperparameters['BN'], 
                      lr=hyperparameters['lr'], printOut=False,
                      optimizer='adam', activation=hyperparameters['activation'],
