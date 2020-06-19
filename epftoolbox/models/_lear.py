@@ -13,8 +13,7 @@ from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
 class LEAR(object):
-    """
-    Class to build a LEAR model, recalibrate it, and use it to predict DA electricity prices
+    """Class to build a LEAR model, recalibrate it, and use it to predict DA electricity prices
     
     Parameters
     ----------
@@ -36,9 +35,10 @@ class LEAR(object):
     # Ignore convergence warnings from scikit-learn LASSO module
     @ignore_warnings(category=ConvergenceWarning)
     def recalibrate(self, Xtrain, Ytrain, Xtest):
-        """
-        Function to recalibrate the LEAR model. It uses a training (Xtrain, Ytrain) pair for 
-        recalibration, and it uses the input Xtest to make the next prediction 
+        """Function to recalibrate the LEAR model. 
+        
+        It uses a training (Xtrain, Ytrain) pair for recalibration, and it uses the input 
+        Xtest to make the next prediction.
         
         Parameters
         ----------
@@ -55,7 +55,8 @@ class LEAR(object):
         
         Returns
         -------
-        The prediction of day-ahead prices after recalibrating the model        
+        numpy.array
+            The prediction of day-ahead prices after recalibrating the model        
         
         """
 
@@ -88,11 +89,9 @@ class LEAR(object):
 
         return Yp
 
-    def build_and_split_XYs(self, df_train, df_test=None, date_test=None):
+    def _build_and_split_XYs(self, df_train, df_test=None, date_test=None):
         
-        """
-        Method that generates the X,Y arrays for training and testing based on
-        pandas dataframes
+        """Internal function that generates the X,Y arrays for training and testing based on pandas dataframes
         
         Parameters
         ----------
@@ -107,8 +106,9 @@ class LEAR(object):
         
         Returns
         -------
-        [Xtrain, Ytrain, Xtest] as the list containing the (X,Y) input/output pairs for training, 
-        and the input for testing
+        list
+            [Xtrain, Ytrain, Xtest] as the list containing the (X,Y) input/output pairs for training, 
+            and the input for testing
         """
 
         # Checking that the first index in the dataframes corresponds with the hour 00:00 
@@ -236,10 +236,10 @@ class LEAR(object):
 
 
     def recalibrate_and_forecast_next_day(self, df, calibration_window, next_day_date):
-        """
-        Module that recalibrates a LEAR model and makes a day-ahead prediction
-        # using a dataframe of past data, the calibration window of the LEAR model,
-        and the date of the day-ahead
+        """Easy-to-use interface for daily recalibration and forecasting of the LEAR model
+        
+        The function receives a pandas dataframe and a date. Usually, the data should
+        correspond with the date of the next-day when using for daily recalibration.
         
         Parameters
         ----------
@@ -256,6 +256,7 @@ class LEAR(object):
         
         Returns
         -------
+        numpy.array
             The prediction of day-ahead prices
         """
 
@@ -270,7 +271,7 @@ class LEAR(object):
 
 
         # Generating X,Y pairs for predicting prices
-        Xtrain, Ytrain, Xtest, = self.build_and_split_XYs(
+        Xtrain, Ytrain, Xtest, = self._build_and_split_XYs(
             df_train=df_train, df_test=df_test, date_test=next_day_date)
 
         # Recalibrating the LEAR model and extracting the prediction
@@ -283,11 +284,10 @@ def evaluate_lear_in_test_dataset(path_datasets_folder=os.path.join('.', 'datase
                                   path_recalibration_folder=os.path.join('.', 'experimental_files'),
                                   dataset='PJM', years_test=2, calibration_window=364 * 3, 
                                   begin_test_date=None, end_test_date=None):
-    """
-    Function that allows easy evaluation of the LEAR model in a given test dataset. The test
-    dataset is simply defined by a market name, and the test dataset by its dates. This function
-    imports the dataset associated with the market name and performs a recalibration and evaluation
-    of the LEAR model in the given dates.
+    """Function for easy evaluation of the LEAR model in a test dataset using daily recalibration. 
+    
+    The test dataset is defined by a market name and the test dates dates. The function
+    generates the test and training datasets, and evaluates a LEAR model considering daily recalibration. 
     
     Parameters
     ----------
@@ -314,13 +314,13 @@ def evaluate_lear_in_test_dataset(path_datasets_folder=os.path.join('.', 'datase
         Optional parameter to select the test dataset. Used in combination with the argument
         end_test_date. If either of them is not provided, the test dataset is built using the 
         years_test argument. begin_test_date should either be a string with the following 
-        format d/m/Y H:M, or a datetime object
+        format ```d/m/Y H:M```, or a datetime object
     
     end_test_date : datetime/str, optional
         Optional parameter to select the test dataset. Used in combination with the argument
         begin_test_date. If either of them is not provided, the test dataset is built using the 
         years_test argument. end_test_date should either be a string with the following 
-        format d/m/Y H:M, or a datetime object       
+        format ```d/m/Y H:M```, or a datetime object       
     
     Returns
     -------

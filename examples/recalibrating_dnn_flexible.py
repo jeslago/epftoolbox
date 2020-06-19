@@ -5,7 +5,7 @@ import os
 
 from epftoolbox.data import read_data
 from epftoolbox.evaluation import MAE, sMAPE
-from epftoolbox.models import DNNRecalibration
+from epftoolbox.models import DNN
 
 
 
@@ -106,7 +106,7 @@ if not new_recalibration:
 else:
     forecast_dates = forecast.index
 
-model = DNNRecalibration(
+model = DNN(
     experiment_id=experiment_id, path_hyperparameter_folder=path_hyperparameter_folder, nlayers=nlayers, 
     dataset=dataset, years_test=years_test, shuffle_train=shuffle_train, data_augmentation=data_augmentation,
     calibration_window=calibration_window)

@@ -88,6 +88,31 @@ class InvariantScaler(MedianScaler):
 
         return transformed_data
 
+
+class DataScaler(object):
+
+    def __init__(self, normalize):
+
+        if normalize == 'Norm':
+            self.scaler = MinMaxScaler(feature_range=(0, 1))
+        elif normalize == 'Norm1':
+            self.scaler = MinMaxScaler(feature_range=(-1, 1))
+        elif normalize == 'Std':
+            self.scaler = StandardScaler()
+        elif normalize == 'Median':
+            self.scaler = MedianScaler()
+        elif normalize == 'Invariant':
+            self.scaler = InvariantScaler()        
+
+    def fit_transform(self, dataset):
+
+        return self.scaler.fit_transform(dataset)
+
+    def transform(self, dataset):
+
+        return self.scaler.transform(dataset)
+
+
 def scaling(datasets, normalize):
     """Summary
     Scaling datasets
@@ -99,16 +124,7 @@ def scaling(datasets, normalize):
         TYPE: Description
     """
 
-    if normalize == 'Norm':
-        scaler = MinMaxScaler(feature_range=(0, 1))
-    elif normalize == 'Norm1':
-        scaler = MinMaxScaler(feature_range=(-1, 1))
-    elif normalize == 'Std':
-        scaler = StandardScaler()
-    elif normalize == 'Median':
-        scaler = MedianScaler()
-    elif normalize == 'Invariant':
-        scaler = InvariantScaler()        
+    scaler = DataScaler(normalize)
 
     for i, dataset in enumerate(datasets):
         if i == 0:

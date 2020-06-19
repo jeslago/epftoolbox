@@ -3,7 +3,8 @@ import numpy as np
 from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
 import pickle as pc
 from datetime import datetime
-from epftoolbox.models import DNNModel, build_and_split_XYs
+from epftoolbox.models import DNNModel
+from epftoolbox.models._dnn import _build_and_split_XYs
 from epftoolbox.data import scaling
 from epftoolbox.data import read_data
 from epftoolbox.evaluation import MAE, sMAPE
@@ -11,12 +12,27 @@ from functools import partial
 import os
 
 def _build_space(nlayer, data_augmentation, n_exogenous_inputs):
+    """Function that generates the hyperparameter/feature search space 
+    
+    Parameters
+    ----------
+    nlayer : int
+        Number of layers of the DNN model
+    data_augmentation : bool
+        Boolean that selects whether augmenting data is considered
+    n_exogenous_inputs : int
+        Number of exogenous inputs in the market under study
+    
+    Returns
+    -------
+    dict
+        Dictionary defining the search space
+    """
 
     # Defining the hyperparameter space. First the neural net hyperparameters,
     # later the input features
-
     space = {
-        'BN': hp.choice('BN', [False, True]),
+        'batch_normalization': hp.choice('batch_normalization', [False, True]),
         'dropout': hp.uniform('dropout', 0, 1),
         'lr': hp.loguniform('lr', np.log(5e-4), np.log(0.1)),
         'seed': hp.quniform('seed', 1, 1000, 1),
@@ -66,8 +82,46 @@ def _build_space(nlayer, data_augmentation, n_exogenous_inputs):
 
 
 def _hyperopt_objective(hyperparameters, trials, trials_file_path, max_evals, nlayers, dfTrain, dfTest, 
-                        path_hyperparameters_folder, shuffle_train, dataset, data_augmentation, 
+                        shuffle_train, dataset, data_augmentation, 
                         calibration_window, n_exogenous_inputs):
+    """Function that defines the hyperparameter optimization objective/loss
+    
+    This function receives as input a set of hyperparameters, trains a DNN using them,
+    and returns the performance of the DNN for the selected hyperparameters in a validation
+    dataset
+
+    Parameters
+    ----------
+    hyperparameters : dict
+        A dictionary provided by hyperopt indicating whether each hyperparameter/feature is selected
+    trials : hyperopt.Trials
+        The trials object that stores the hyperparameter optimization runs
+    trials_file_path : str
+        The path to store the trials object
+    max_evals : int
+        Maximum number of iterations for hyperparameter optimization
+    nlayers : int
+        Number of layers in the DNN model
+    dfTrain : pandas.DataFrame
+        Dataframe containing the training data
+    dfTrain : pandas.DataFrame
+        Dataframe containing the testing data
+    shuffle_train : bool
+        Boolean that selects whether the training and validation datasets are shuffled
+    dataset : TYPE
+        Description
+    data_augmentation : TYPE
+        Description
+    calibration_window : TYPE
+        Description
+    n_exogenous_inputs : TYPE
+        Description
+    
+    Returns
+    -------
+    dict
+        A dictionary summarizing the result of the hyperparameter run
+    """
 
     # Re-defining the training dataset based on the calibration window. The calibration window
     # can be given as an external parameter. If the value 0 is given, the calibration window
@@ -95,7 +149,7 @@ def _hyperopt_objective(hyperparameters, trials, trials_file_path, max_evals, nl
 
     # Defining X,Y datasets
     Xtrain, Ytrain, Xval, Yval, Xtest, Ytest, indexTest = \
-        build_and_split_XYs(dfTrain=dfTrain_cw, dfTest=dfTest, features=hyperparameters, 
+        _build_and_split_XYs(dfTrain=dfTrain_cw, dfTest=dfTest, features=hyperparameters, 
                           shuffle_train=shuffle_train, hyperoptimization=True,
                           data_augmentation=data_augmentation, n_exogenous_inputs=n_exogenous_inputs)
     
@@ -114,13 +168,13 @@ def _hyperopt_objective(hyperparameters, trials, trials_file_path, max_evals, nl
     np.random.seed(int(hyperparameters['seed']))
 
     # Initialize model
-    forecaster = DNNModel(neurons=neurons, Nfeatures=Xtrain.shape[-1], 
-                     dropout=hyperparameters['dropout'], BN=hyperparameters['BN'], 
-                     lr=hyperparameters['lr'], printOut=False,
+    forecaster = DNNModel(neurons=neurons, n_features=Xtrain.shape[-1], 
+                     dropout=hyperparameters['dropout'], batch_normalization=hyperparameters['batch_normalization'], 
+                     lr=hyperparameters['lr'], verbose=False,
                      optimizer='adam', activation=hyperparameters['activation'],
-                     maxEpochsWOImprovement=20, scaler=scaler, loss='mae',
+                     epochs_early_stopping=20, scaler=scaler, loss='mae',
                      regularization=hyperparameters['reg']['val'], 
-                     lambdaReg=hyperparameters['reg']['lambda'],
+                     lambda_reg=hyperparameters['reg']['lambda'],
                      initializer=hyperparameters['init'])
 
     forecaster.fit(Xtrain, Ytrain, Xval, Yval)
@@ -150,52 +204,65 @@ def _hyperopt_objective(hyperparameters, trials, trials_file_path, max_evals, nl
                           
     return return_values
 
-
 def hyperparameter_optimizer(path_datasets_folder=os.path.join('.', 'datasets'), 
                              path_hyperparameters_folder=os.path.join('.', 'experimental_files'), 
                              new_hyperopt=1, max_evals=1500, nlayers=2, dataset='PJM', years_test=2, 
                              calibration_window=4, shuffle_train=1, data_augmentation=0,
                              experiment_id=None, begin_test_date=None, end_test_date=None):
     
-    """ Main fucntion to perform hyperparameter optimization
+    """Main fucntion to perform hyperparameter optimization
     
-    Args:
-        path_datasets_folder (str, optional): Path to read and store datasets
-        
-        path_hyperparameters_folder (str, optional): Path to read and store trials files from hyperopt
-        
-        new_hyperopt (bool, optional): Boolean that decides whether to start a new hyperparameter optimization
-        
-        max_evals (int, optional): Maximum number of iterations for hyperopt
-        
-        nlayers (int, optional): Number of layers of the DNN model
-        
-        dataset (str, optional): Market under study. If it not one of the standard ones, the file name
-            has to be provided, where the file has to be a csv file
-        
-        years_test (int, optional): Number of years (a year is 364 days) in the test dataset
-        
-        calibration_window (int, optional): Calibration window used for training the models
-        
-        shuffle_train (bool, optional): Boolean that selects whether the validation and training datasets
-            are shuffled
-        
-        data_augmentation (bool, optional): Boolean that selects whether a data augmentation technique 
-            for DNNs is used
-        
-        experiment_id (None, optional): Unique identifier to save/read the trials file. If not
-            provided, the current date is used as identifier
-
-        begin_test_date (None, optional): Optional parameter for selecting the test dataset together
-            with end_test_date. If either of them is not provided, the test dataset is built using the 
-            years_test parameter. It should either be one of the date formats existing in python or a 
-            string representing a date with the following format "%d/%m/%Y %H:%M"
-        
-        end_test_date (None, optional): Optional parameter for selecting the test dataset together
-            with end_test_date. If either of them is not provided, the test dataset is built using the 
-            years_test parameter. It should either be one of the date formats existing in python or a 
-            string representing a date with the following format "%d/%m/%Y %H:%M"
-
+    Parameters
+    ----------
+    path_datasets_folder : str, optional
+        Path to read and store datasets
+    
+    path_hyperparameters_folder : str, optional
+        Path to read and store trials files from hyperopt
+    
+    new_hyperopt : bool, optional
+        Boolean that decides whether to start a new hyperparameter optimization
+    
+    max_evals : int, optional
+        Maximum number of iterations for hyperopt
+    
+    nlayers : int, optional
+        Number of layers of the DNN model
+    
+    dataset : str, optional
+        Market under study. If it not one of the standard ones, the file name
+        has to be provided, where the file has to be a csv file
+    
+    years_test : int, optional
+        Number of years (a year is 364 days) in the test dataset
+    
+    calibration_window : int, optional
+        Calibration window used for training the models
+    
+    shuffle_train : bool, optional
+        Boolean that selects whether the validation and training datasets
+        are shuffled
+    
+    data_augmentation : bool, optional
+        Boolean that selects whether a data augmentation technique 
+        for DNNs is used
+    
+    experiment_id : None, optional
+        Unique identifier to save/read the trials file. If not
+        provided, the current date is used as identifier
+    
+    begin_test_date : None, optional
+        Optional parameter for selecting the test dataset together
+        with end_test_date. If either of them is not provided, the test dataset is built using the 
+        years_test parameter. It should either be one of the date formats existing in python or a 
+        string representing a date with the following format ``"%d/%m/%Y %H:%M"``
+    
+    end_test_date : None, optional
+        Optional parameter for selecting the test dataset together
+        with end_test_date. If either of them is not provided, the test dataset is built using the 
+        years_test parameter. It should either be one of the date formats existing in python or a 
+        string representing a date with the following format ``"%d/%m/%Y %H:%M"``
+    
     """
 
     # Checking if provided directory for hyperparameter exists and if not create it
