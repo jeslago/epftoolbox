@@ -16,9 +16,7 @@ $ pip install .
 Navigate to the examples folder and check the existing examples to get you started. The examples include several applications of the two state-of-the art forecasting model: a deep neural net and the LEAR model.
 
 ## Documentation
-We are still working on the documentation. You can start in the meantime by looking at the examples and reading the paper where the library was proposed:
-
-Jesus Lago, Grzegorz Marcjasz, Bart De Schutter, Rafał Weron. "Forecasting day-ahead electricity prices: A review of state-of-the-art algorithms, best practices and an open-access benchmark". *Renewable and Sustainable Energy Reviews* (2020). Under Review.
+The [documentation](https://epftoolbox.readthedocs.io/en/latest/) of the library provides an introduction to the library features and explains all functionalities in detail. Note that the documentation is still being built and some functionalities are still undocumented.
 
 ## Features
 The library provides easy access to a set of tools and benchmarks that can be used to evaluate and compare new methods for electricity price forecasting.
@@ -40,3 +38,20 @@ Easy access to five datasets comprising 6 years of data each and representing fi
 
 ### Available forecasts
 Readily available forecasts of the state-of-the-art methods so that researchers can evaluate new methods without re-estimating the models.
+
+
+## Citation
+If you use the epftoolbox in a scientific publication, we would appreciate citations to the following paper:
+
+Jesus Lago, Grzegorz Marcjasz, Bart De Schutter, Rafał Weron. "Forecasting day-ahead electricity prices: A review of state-of-the-art algorithms, best practices and an open-access benchmark". *Renewable and Sustainable Energy Reviews* (2020). Under Review.
+
+
+Bibtex entry::
+
+@article{epftoolbox,
+ title={Forecasting day-ahead electricity prices: {A} review of state-of-the-art algorithms, best practices and an open-access benchmark},
+ author={Jesus Lago and Grzegorz Marcjasz and Bart De Schutter and Rafał Weron},
+ journal={Renewable and Sustainable Energy Reviews},
+ year={2020 (Under review)}
+}
+```

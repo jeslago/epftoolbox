@@ -12,6 +12,8 @@
 #
 import os
 import sys
+from github_link import make_linkcode_resolve
+
 sys.path.insert(0, os.path.abspath('../'))
 
 
@@ -37,7 +39,8 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.coverage', # Automatically check if functions are documented
     'sphinx.ext.mathjax',  # Allow support for algebra
-    'sphinx.ext.viewcode', # Include the source code in documentation
+    # 'sphinx.ext.viewcode', # Include the source code in documentation
+    'sphinx.ext.linkcode',
     'sphinx.ext.napoleon',             # Support NumPy style docstrings
     "sphinx_rtd_theme",
 ]
@@ -62,3 +65,11 @@ html_theme = "sphinx_rtd_theme"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+
+# Function to find the code on the web
+# The following is used by sphinx.ext.linkcode to provide links to github
+linkcode_resolve = make_linkcode_resolve('epftoolbox',
+                                         'https://github.com/jeslago/epftoolbox/'
+                                         'blob/master/'
+                                         '{package}/{path}#L{lineno}')
