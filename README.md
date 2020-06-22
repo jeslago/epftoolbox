@@ -16,7 +16,7 @@ $ pip install .
 Navigate to the examples folder and check the existing examples to get you started. The examples include several applications of the two state-of-the art forecasting model: a deep neural net and the LEAR model.
 
 ## Documentation
-The [documentation](https://epftoolbox.readthedocs.io/en/latest/) of the library provides an introduction to the library features and explains all functionalities in detail. Note that the documentation is still being built and some functionalities are still undocumented.
+The documentation can be found [here](https://epftoolbox.readthedocs.io/en/latest/). It provides an introduction to the library features and explains all functionalities in detail. Note that the documentation is still being built and some functionalities are still undocumented.
 
 ## Features
 The library provides easy access to a set of tools and benchmarks that can be used to evaluate and compare new methods for electricity price forecasting.
