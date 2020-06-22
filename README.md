@@ -1,6 +1,6 @@
 # epftoolbox
 
-The epftoolbox is the first open-access library that provides multiple tools for research in electricity price forecasting. Its main goal is to make available a set of tools that ensure reproducibility and establish research standards in electricity price forecasting research.
+The epftoolbox is the first open-access library for driving research in electricity price forecasting. Its main goal is to make available a set of tools that ensure reproducibility and establish research standards in electricity price forecasting research.
 
 The library has been developed as part of the following article:
 
