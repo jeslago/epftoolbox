@@ -1,7 +1,14 @@
 # epftoolbox
 
+The epftoolbox is the first open-access library that provides multiple tools for research in electricity price forecasting. Its main goal is to make available a set of tools that ensure reproducibility and establish research standards in electricity price forecasting research.
 
-An open-access benchmark and toolbox to help drive the research in electricity price forecasting. 
+The library has been developed as part of the following article:
+
+    Jesus Lago, Grzegorz Marcjasz, Bart De Schutter, Rafał Weron. "Forecasting day-ahead 
+    electricity prices: A review of state-of-the-art algorithms, best practices and an 
+    open-access benchmark". *Renewable and Sustainable Energy Reviews* (2020). Under Review.
+
+Website: [https://epftoolbox.readthedocs.io/en/latest/](https://epftoolbox.readthedocs.io/en/latest/)
 
 ## Getting started
 Download the repository and navigate into the folder
@@ -43,13 +50,16 @@ Readily available forecasts of the state-of-the-art methods so that researchers 
 ## Citation
 If you use the epftoolbox in a scientific publication, we would appreciate citations to the following paper:
 
-    Jesus Lago, Grzegorz Marcjasz, Bart De Schutter, Rafał Weron. "Forecasting day-ahead electricity prices: A review of state-of-the-art algorithms, best practices and an open-access benchmark". *Renewable and Sustainable Energy Reviews* (2020). Under Review.
+    Jesus Lago, Grzegorz Marcjasz, Bart De Schutter, Rafał Weron. "Forecasting day-ahead 
+    electricity prices: A review of state-of-the-art algorithms, best practices and an 
+    open-access benchmark". *Renewable and Sustainable Energy Reviews* (2020). Under Review.
 
 
 Bibtex entry::
 
     @article{epftoolbox,
-     title={Forecasting day-ahead electricity prices: {A} review of state-of-the-art algorithms, best practices and an open-access benchmark},
+     title={Forecasting day-ahead electricity prices: {A} review of state-of-the-art 
+     algorithms, best practices and an open-access benchmark},
      author={Jesus Lago and Grzegorz Marcjasz and Bart De Schutter and Rafał Weron},
      journal={Renewable and Sustainable Energy Reviews},
      year={2020 (Under review)}
