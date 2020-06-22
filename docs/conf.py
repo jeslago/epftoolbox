@@ -36,7 +36,7 @@ extensions = [
     'sphinx.ext.coverage', # Automatically check if functions are documented
     'sphinx.ext.mathjax',  # Allow support for algebra
     'sphinx.ext.viewcode', # Include the source code in documentation
-    'numpydoc',             # Support NumPy style docstrings
+    'sphinx.ext.napoleon',             # Support NumPy style docstrings
     "sphinx_rtd_theme",
 ]
 
