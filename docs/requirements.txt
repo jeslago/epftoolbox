@@ -1,2 +1,6 @@
-numpy>=1.18
-pandas>=1.0.1
+numpy>=1
+pandas>=1
+hyperopt>=0.2
+tensorflow>=2.2
+scikit-learn>=0.22
+statsmodels>=0.11
