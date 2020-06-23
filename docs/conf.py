@@ -37,6 +37,7 @@ master_doc = 'index'
 extensions = [
     'sphinx.ext.autodoc',  # Support automatic documentation
     'sphinx.ext.autosectionlabel',
+    'sphinx.ext.autosummary',
     'sphinx.ext.coverage', # Automatically check if functions are documented
     'sphinx.ext.mathjax',  # Allow support for algebra
     # 'sphinx.ext.viewcode', # Include the source code in documentation
@@ -44,6 +45,9 @@ extensions = [
     'sphinx.ext.napoleon',             # Support NumPy style docstrings
     "sphinx_rtd_theme",
 ]
+
+autodoc_default_flags = ['members']
+autosummary_generate = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

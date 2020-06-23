@@ -6,7 +6,7 @@ on day-ahead electricity price forecasting.
 
 The library contrain three main components: 
 
-* The :ref:`data management<dataman>` subpackage, which comprises a module for :ref:`processing data<dataproc>` and another module for :ref:`dataset extraction<dataexct>`.
+* The :ref:`data management<dataman>` subpackage, which comprises a module for :ref:`processing data<datawrang>` and another module for :ref:`dataset extraction<dataexct>`.
 
 * The :ref:`models<models>` subpackage, which provides two state of the art forecasting models for electricity price forecasting. The contains a module for the :ref:`learref` model and another module for the :ref:`dnnref` model.
 

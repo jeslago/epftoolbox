@@ -1,21 +1,23 @@
 .. _dataman:
 
+==================
 Data management
 ==================
 
-.. _dataexct:
+This subpackage provides an interface to extract data from different day-ahead electricity markets and a module to process the market data before its use in prediction models. 
 
-Dataset extraction
----------------------------
+The first functionality is provided by the :ref:`data extraction <dataexct>` module,  which provides automatic access to the data from five different day-ahead electricity markets as well as an easy-to-use interface to read data from other markets.
 
-.. autofunction:: epftoolbox.data.read_data
+The second functionality is provided by the :ref:`data wrangling <datawrang>` module, which includes the most common scaling transformations in electricity price forecasting. 
 
-.. _dataproc:
 
-Data processing
----------------------------
+.. toctree::
+   :maxdepth: 1
+   
+   data_extract
+   data_wrangling
+   
 
-.. autofunction:: epftoolbox.data.scaling
-
-.. autoclass:: epftoolbox.data.DataScaler
-   :members:
+.. For the :ref:`LEAR` model, the subpackage provides an interface to perform estimation, daily recalibration,
+.. and prediction. For :ref:`DNN` model, it provides an interface to perform estimation,
+.. hyperparameter optimization, daily recalibration, and prediction.  

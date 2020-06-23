@@ -64,4 +64,3 @@ Bibtex entry::
      journal={Renewable and Sustainable Energy Reviews},
      year={2020 (Under review)}
     }
-```

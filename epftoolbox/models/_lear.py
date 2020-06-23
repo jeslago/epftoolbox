@@ -13,18 +13,15 @@ from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
 class LEAR(object):
-    """Class to build a LEAR model, recalibrate it, and use it to predict DA electricity prices
+    """Class to build a LEAR model, recalibrate it, and use it to predict DA electricity prices.
+    
+    An example on how to use this class is provided :ref:`here<learex2>`.
     
     Parameters
     ----------
     calibration_window : int, optional
-        Calibration window (in days) for the LEAR model
-    
-    Attributes
-    ----------
-    calibration_window : int
-        Calibration window (in days) for the LEAR model
-    
+        Calibration window (in days) for the LEAR model.
+        
     """
     
     def __init__(self, calibration_window=364 * 3):
@@ -34,25 +31,21 @@ class LEAR(object):
 
     # Ignore convergence warnings from scikit-learn LASSO module
     @ignore_warnings(category=ConvergenceWarning)
-    def recalibrate(self, Xtrain, Ytrain, Xtest):
+    def recalibrate(self, Xtrain, Ytrain):
         """Function to recalibrate the LEAR model. 
         
-        It uses a training (Xtrain, Ytrain) pair for recalibration, and it uses the input 
-        Xtest to make the next prediction.
+        It uses a training (Xtrain, Ytrain) pair for recalibration
         
         Parameters
         ----------
         Xtrain : numpy.array
-            Input in training dataset. It should be of size [n,m] where n is the number of days
-            in the training dataset and m the number of input features
+            Input in training dataset. It should be of size *[n,m]* where *n* is the number of days
+            in the training dataset and *m* the number of input features
         
         Ytrain : numpy.array
-            Output in training dataset. It should be of size [n,24] where n is the number of days 
+            Output in training dataset. It should be of size *[n,24]* where *n* is the number of days 
             in the training dataset and 24 are the 24 prices of each day
-        
-        Xtest : numpy.array
-            Input for the testing dataset. It should be of size [1,m]
-        
+                
         Returns
         -------
         numpy.array
@@ -60,18 +53,14 @@ class LEAR(object):
         
         """
 
-        # Predefining predicted prices
-        Yp = np.zeros(24)
-
         # # Applying Invariant, aka asinh-median transformation to the prices
-        [Ytrain], scaler = scaling([Ytrain], 'Invariant')
+        [Ytrain], self.scalerY = scaling([Ytrain], 'Invariant')
 
         # # Rescaling all inputs except dummies (7 last features)
-        [Xtrain_no_dummies, Xtest_no_dummies], _ = scaling([Xtrain[:, :-7], Xtest[:, :-7]], 'Invariant')
-        
+        [Xtrain_no_dummies], self.scalerX = scaling([Xtrain[:, :-7]], 'Invariant')
         Xtrain[:, :-7] = Xtrain_no_dummies
-        Xtest[:, :-7] = Xtest_no_dummies
 
+        self.models = {}
         for h in range(24):
 
             # Estimating lambda hyperparameter using LARS
@@ -82,10 +71,63 @@ class LEAR(object):
             model = Lasso(max_iter=2500, alpha=param)
             model.fit(Xtrain, Ytrain[:, h])
 
-            # Predicting test dataset and saving
-            Yp[h] = model.predict(Xtest)
+            self.models[h] = model
+
+    def predict(self, X):
+        """Function that makes a prediction using some given inputs.
         
-        Yp = scaler.inverse_transform(Yp.reshape(1, -1))
+        Parameters
+        ----------
+        X : numpy.array
+            Input of the model.
+        
+        Returns
+        -------
+        numpy.array
+            An array containing the predictions.
+        """
+
+        # Predefining predicted prices
+        Yp = np.zeros(24)
+
+        # # Rescaling all inputs except dummies (7 last features)
+        X_no_dummies = self.scalerX.transform(X[:, :-7])
+        X[:, :-7] = X_no_dummies
+
+        # Predicting the current date using a recalibrated LEAR
+        for h in range(24):
+
+            # Predicting test dataset and saving
+            Yp[h] = self.models[h].predict(X)
+        
+        Yp = self.scalerY.inverse_transform(Yp.reshape(1, -1))
+
+        return Yp
+
+    def recalibrate_predict(self, Xtrain, Ytrain, Xtest):
+        """Function that first recalibrates the LEAR model and then makes a prediction.
+
+        The function receives the training dataset, and trains the LEAR model. Then, using
+        the inputs of the test dataset, it makes a new prediction.
+        
+        Parameters
+        ----------
+        Xtrain : numpy.array
+            Input of the training dataset.
+        Xtest : numpy.array
+            Input of the test dataset.
+        Ytrain : numpy.array
+            Output of the training dataset.
+        
+        Returns
+        -------
+        numpy.array
+            An array containing the predictions in the test dataset.
+        """
+
+        self.recalibrate(Xtrain=Xtrain, Ytrain=Ytrain)    
+
+        Yp = self.predict(X=Xtest)
 
         return Yp
 
@@ -236,7 +278,7 @@ class LEAR(object):
 
 
     def recalibrate_and_forecast_next_day(self, df, calibration_window, next_day_date):
-        """Easy-to-use interface for daily recalibration and forecasting of the LEAR model
+        """Easy-to-use interface for daily recalibration and forecasting of the LEAR model.
         
         The function receives a pandas dataframe and a date. Usually, the data should
         correspond with the date of the next-day when using for daily recalibration.
@@ -244,20 +286,20 @@ class LEAR(object):
         Parameters
         ----------
         df : pandas.DataFrame
-            Dataframe of historical data containing prices and N exogenous inputs. 
+            Dataframe of historical data containing prices and *N* exogenous inputs. 
             The index of the dataframe should be dates with hourly frequency. The columns 
-            should have the following names ['Price', 'Exogenous 1', 'Exogenous 2', ...., 'Exogenous N']
+            should have the following names ``['Price', 'Exogenous 1', 'Exogenous 2', ...., 'Exogenous N']``.
         
         calibration_window : int
-            Calibration window (in days) for the LEAR model
+            Calibration window (in days) for the LEAR model.
         
         next_day_date : datetime
-            Date of the day-ahead
+            Date of the day-ahead.
         
         Returns
         -------
         numpy.array
-            The prediction of day-ahead prices
+            The prediction of day-ahead prices.
         """
 
         # We define the new training dataset and test datasets 
@@ -275,7 +317,7 @@ class LEAR(object):
             df_train=df_train, df_test=df_test, date_test=next_day_date)
 
         # Recalibrating the LEAR model and extracting the prediction
-        Yp = self.recalibrate(Xtrain=Xtrain, Ytrain=Ytrain, Xtest=Xtest)
+        Yp = self.recalibrate_predict(Xtrain=Xtrain, Ytrain=Ytrain, Xtest=Xtest)
 
         return Yp
 
@@ -289,43 +331,45 @@ def evaluate_lear_in_test_dataset(path_datasets_folder=os.path.join('.', 'datase
     The test dataset is defined by a market name and the test dates dates. The function
     generates the test and training datasets, and evaluates a LEAR model considering daily recalibration. 
     
+    An example on how to use this function is provided :ref:`here<learex1>`.   
+
     Parameters
     ----------
     path_datasets_folder : str, optional
         path where the datasets are stored or, if they do not exist yet,
-        the path where the datasets are to be stored
+        the path where the datasets are to be stored.
     
     path_recalibration_folder : str, optional
-        path to save the files of the experiment dataset (str, optional
+        path to save the files of the experiment dataset.
     
     dataset : str, optional
         Name of the dataset/market under study. If it is one one of the standard markets, 
-        i.e. PJM, NP, BE, FR, or DE, the dataset is automatically downloaded. If the name
-        is different, a dataset with a csv format should be place in the path_datasets_folder
+        i.e. ``"PJM"``, ``"NP"``, ``"BE"``, ``"FR"``, or ``"DE"``, the dataset is automatically downloaded. If the name
+        is different, a dataset with a csv format should be place in the ``path_datasets_folder``.
 
     years_test : int, optional
         Number of years (a year is 364 days) in the test dataset. It is only used if 
-        the arguments begin_test_date and end_test_date are not provided.
+        the arguments ``begin_test_date`` and ``end_test_date`` are not provided.
     
     calibration_window : int, optional
-        Number of days used in the training dataset for recalibration
+        Number of days used in the training dataset for recalibration.
     
     begin_test_date : datetime/str, optional
         Optional parameter to select the test dataset. Used in combination with the argument
-        end_test_date. If either of them is not provided, the test dataset is built using the 
-        years_test argument. begin_test_date should either be a string with the following 
-        format ```d/m/Y H:M```, or a datetime object
+        ``end_test_date``. If either of them is not provided, the test dataset is built using the 
+        ``years_test`` argument. ``begin_test_date`` should either be a string with the following 
+        format ``"%d/%m/%Y %H:%M"``, or a datetime object.
     
     end_test_date : datetime/str, optional
         Optional parameter to select the test dataset. Used in combination with the argument
-        begin_test_date. If either of them is not provided, the test dataset is built using the 
-        years_test argument. end_test_date should either be a string with the following 
-        format ```d/m/Y H:M```, or a datetime object       
+        ``begin_test_date``. If either of them is not provided, the test dataset is built using the 
+        ``years_test`` argument. ``end_test_date`` should either be a string with the following 
+        format ``"%d/%m/%Y %H:%M"``, or a datetime object.       
     
     Returns
     -------
-        A dataframe with all the predictions in the test dataset. The dataframe is also
-        written to path_recalibration_folder
+    pandas.DataFrame
+        A dataframe with all the predictions in the test dataset. The dataframe is also written to path_recalibration_folder.
     """
 
     # Checking if provided directory for recalibration exists and if not create it

@@ -210,58 +210,65 @@ def hyperparameter_optimizer(path_datasets_folder=os.path.join('.', 'datasets'),
                              calibration_window=4, shuffle_train=1, data_augmentation=0,
                              experiment_id=None, begin_test_date=None, end_test_date=None):
     
-    """Main fucntion to perform hyperparameter optimization
+    """Function to optimize the hyperparameters and input features of the DNN. An example on how to 
+    use this function is provided :ref:`here<dnnex1>`.
     
     Parameters
     ----------
     path_datasets_folder : str, optional
-        Path to read and store datasets
+        Path to read and store datasets.
     
     path_hyperparameters_folder : str, optional
-        Path to read and store trials files from hyperopt
+        Path to read and store trials files from hyperopt.
     
     new_hyperopt : bool, optional
-        Boolean that decides whether to start a new hyperparameter optimization
+        Boolean that decides whether to start a new hyperparameter optimization or re-start an
+        existing one.
     
     max_evals : int, optional
-        Maximum number of iterations for hyperopt
+        Maximum number of iterations for hyperopt.
     
     nlayers : int, optional
-        Number of layers of the DNN model
+        Number of layers of the DNN model.
     
     dataset : str, optional
-        Market under study. If it not one of the standard ones, the file name
-        has to be provided, where the file has to be a csv file
+        Name of the dataset/market under study. If it is one one of the standard markets, 
+        i.e. ``"PJM"``, ``"NP"``, ``"BE"``, ``"FR"``, or ``"DE"``, the dataset is automatically downloaded. If the name
+        is different, a dataset with a csv format should be place in the ``path_datasets_folder``.
     
     years_test : int, optional
-        Number of years (a year is 364 days) in the test dataset
+        Number of years (a year is 364 days) in the test dataset. It is only used if 
+        the arguments ``begin_test_date`` and ``end_test_date`` are not provided.
     
     calibration_window : int, optional
-        Calibration window used for training the models
+        Calibration window used for training the models.
     
     shuffle_train : bool, optional
         Boolean that selects whether the validation and training datasets
-        are shuffled
+        are shuffled. Based on empirical results, this configuration does not play a role
+        when selecting the hyperparameters and features. However, it is important when recalibrating
+        the DNN model.
     
     data_augmentation : bool, optional
         Boolean that selects whether a data augmentation technique 
-        for DNNs is used
+        for DNNs is used. Based on empirical results, for some markets data augmentation might
+        improve forecasting accuracy at the expense of higher computational costs.
     
     experiment_id : None, optional
         Unique identifier to save/read the trials file. If not
-        provided, the current date is used as identifier
+        provided, the current date is used as identifier.
     
-    begin_test_date : None, optional
-        Optional parameter for selecting the test dataset together
-        with end_test_date. If either of them is not provided, the test dataset is built using the 
-        years_test parameter. It should either be one of the date formats existing in python or a 
-        string representing a date with the following format ``"%d/%m/%Y %H:%M"``
+    begin_test_date : datetime/str, optional
+        Optional parameter to select the test dataset. Used in combination with the argument
+        ``end_test_date``. If either of them is not provided, the test dataset is built using the 
+        ``years_test`` argument. ``begin_test_date`` should either be a string with the following 
+        format ``"%d/%m/%Y %H:%M"``, or a datetime object.
     
-    end_test_date : None, optional
-        Optional parameter for selecting the test dataset together
-        with end_test_date. If either of them is not provided, the test dataset is built using the 
-        years_test parameter. It should either be one of the date formats existing in python or a 
-        string representing a date with the following format ``"%d/%m/%Y %H:%M"``
+    end_test_date : datetime/str, optional
+        Optional parameter to select the test dataset. Used in combination with the argument
+        ``begin_test_date``. If either of them is not provided, the test dataset is built using the 
+        ``years_test`` argument. ``end_test_date`` should either be a string with the following 
+        format ``"%d/%m/%Y %H:%M"``, or a datetime object.       
     
     """
 

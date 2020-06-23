@@ -19,56 +19,56 @@ class DNNModel(object):
 
     """Basic DNN model based on keras and tensorflow. 
     
-    The model can be used standalone to train and predict a DNN using its fit/predict functions.
-    However, it is intended to be used within the :class:`hyperparameter_optimizer` function
-    and the :class:`DNN` class. The former obtains a set of best hyperparameter using the DNNModel. 
-    The latter employes the set of best hyperparameters to recalibrate the DNNModel
-    and make predictions
+    The model can be used standalone to train and predict a DNN using its fit/predict methods.
+    However, it is intended to be used within the :class:`hyperparameter_optimizer` method
+    and the :class:`DNN` class. The former obtains a set of best hyperparameter using the :class:`DNNModel` class. 
+    The latter employes the set of best hyperparameters to recalibrate a :class:`DNNModel` object
+    and make predictions.
     
     Parameters
     ----------
     neurons : list
         List containing the number of neurons in each hidden layer. E.g. if ``len(neurons)`` is 2,
         the DNN model has an input layer of size ``n_features``, two hidden layers, and an output 
-        layer of size ``outputShape``
+        layer of size ``outputShape``.
     n_features : int
-        Number of input features in the model. This number defines the size of the input layer
+        Number of input features in the model. This number defines the size of the input layer.
     outputShape : int, optional
-        Default number of output neurons. It is 24 as it is the default in most day-ahead markets
-    dropout : bool, optional
-        Boolean that selects whether 
-    batch_normalization : float, optional
+        Default number of output neurons. It is 24 as it is the default in most day-ahead markets.
+    dropout : float, optional
         Number between [0, 1] that selects the percentage of dropout. A value of 0 indicates
-        no dropout
+        no dropout.
+    batch_normalization : bool, optional
+        Boolean that selects whether batch normalization is considered.
     lr : float, optional
         Learning rate for optimizer algorithm. If none provided, the default one is employed
-        (see the keras documentation for the default learning rates of each algorithm)
+        (see the `keras documentation <https://keras.io/>`_ for the default learning rates of each algorithm).
     verbose : bool, optional
         Boolean that controls the logs. If set to true, a minimum amount of information is 
-        displayed
+        displayed.
     epochs_early_stopping : int, optional
         Number of epochs used in early stopping to stop training. When no improvement is observed
         in the validation dataset after ``epochs_early_stopping`` epochs, the training stops.
     scaler : :class:`epftoolbox.data.DataScaler`, optional
         Scaler object to invert-scale the output of the neural network if the neural network
-        is trained with scaled outputs
+        is trained with scaled outputs.
     loss : str, optional
         Loss to be used when training the neural network. Any of the regression losses defined in 
         keras can be used.
     optimizer : str, optional
-        Name of the optimizer when training the DNN. See the keras documentation for a list
-        of optimizers
+        Name of the optimizer when training the DNN. See the `keras documentation <https://keras.io/>`_ 
+        for a list of optimizers.
     activation : str, optional
-        Name of the activation function in the hidden layers. See the keras documentation for a list
-        of activation function
+        Name of the activation function in the hidden layers. See the `keras documentation <https://keras.io/>`_ for a list
+        of activation function.
     initializer : str, optional
-        Name of the initializer function for the weights of the neural network. See the keras 
-        documentation for a list of initializer functions
+        Name of the initializer function for the weights of the neural network. See the 
+        `keras documentation <https://keras.io/>`_ for a list of initializer functions.
     regularization : None, optional
         Name of the regularization technique. It can can have three values ``'l2'`` for l2-norm
-        regularization, ``'l1'`` for l1-norm regularization, or ``None`` for no regularization 
+        regularization, ``'l1'`` for l1-norm regularization, or ``None`` for no regularization .
     lambda_reg : int, optional
-        The weight for regulization if ``regularization`` is ``'l2'`` or ``'l1'``
+        The weight for regulization if ``regularization`` is ``'l2'`` or ``'l1'``.
     """
 
 
@@ -112,7 +112,7 @@ class DNNModel(object):
         self.model.compile(loss=loss, optimizer=opt)
 
     def _reg(self, lambda_reg):
-        """Internal function to build an l1 or l2 regularizer for the DNN
+        """Internal method to build an l1 or l2 regularizer for the DNN
         
         Parameters
         ----------
@@ -132,7 +132,7 @@ class DNNModel(object):
             return None
 
     def _build_model(self):
-        """Internal function that defines the structure of the DNN
+        """Internal method that defines the structure of the DNN
         
         Returns
         -------
@@ -183,7 +183,7 @@ class DNNModel(object):
         return model
 
     def _obtain_metrics(self, X, Y):
-        """Internal function to update the metrics used to train the network
+        """Internal method to update the metrics used to train the network
         
         Parameters
         ----------
@@ -214,7 +214,7 @@ class DNNModel(object):
         return error, np.mean(mae)
 
     def _display_info_training(self, bestError, bestMAE, countNoImprovement):
-        """Internal function that displays useful information during training
+        """Internal method that displays useful information during training
         
         Parameters
         ----------
@@ -231,18 +231,18 @@ class DNNModel(object):
 
 
     def fit(self, trainX, trainY, valX, valY):
-        """Function to estimate the DNN model
+        """Method to estimate the DNN model.
         
         Parameters
         ----------
         trainX : numpy.array
-            Inputs fo the training dataset
+            Inputs fo the training dataset.
         trainY : numpy.array
-            Outputs fo the training dataset
+            Outputs fo the training dataset.
         valX : numpy.array
-            Inputs fo the validation dataset used for early-stopping
+            Inputs fo the validation dataset used for early-stopping.
         valY : numpy.array
-            Outputs fo the validation dataset used for early-stopping
+            Outputs fo the validation dataset used for early-stopping.
         """
 
         # Variables to control training improvement
@@ -299,30 +299,30 @@ class DNNModel(object):
         self.model.set_weights(bestWeights)
 
     def predict(self, X):
-        """Function to make a prediction after the DNN is trained
+        """Method to make a prediction after the DNN is trained.
         
         Parameters
         ----------
         X : numpy.array
-            Input to the DNN. It has to be of size ``[n, n_features]`` where ``n`` can be any 
-            integer, and``n_features`` is the attribute of the DNN representing the number of
-            input features
+            Input to the DNN. It has to be of size *[n, n_features]* where *n* can be any 
+            integer, and *n_features* is the attribute of the DNN representing the number of
+            input features.
         
         Returns
         -------
         numpy.array
-            Output of the DNN after making the prediction
+            Output of the DNN after making the prediction.
         """
 
         Ybar = self.model.predict(X, verbose=0)
         return Ybar
 
     def clear_session(self):
-        """Function to clear the tensorflow session. 
+        """Method to clear the tensorflow session. 
 
         It is used in the :class:`DNN` class during recalibration to avoid RAM memory leakages.
         In particular, if the DNN is retrained continuosly, at each step tensorflow slightly increases 
-        the total RAM usage
+        the total RAM usage.
 
         """
 
@@ -338,7 +338,7 @@ class DNN(object):
     
     The difference w.r.t. the :class:`DNNModel` class lies on the functionality. The
     :class:`DNNModel` class provides a simple interface to build a keras DNN model which
-    is limited to fit and predict functions. This class extends the functionality by
+    is limited to fit and predict methods. This class extends the functionality by
     providing an interface to extract the best set of hyperparameters, and to perform recalibration
     before every prediction.
     
@@ -347,6 +347,8 @@ class DNN(object):
     using the same parameters: ``nlayers``, ``dataset``, ``years_test``, ``shuffle_train``, 
     ``data_augmentation``, and ``calibration_window``
     
+    An example on how to use this class is provided :ref:`here<dnnex3>`.
+
     Parameters
     ----------
     experiment_id : str
@@ -359,8 +361,8 @@ class DNN(object):
         Number of layers of the DNN model
     dataset : str, optional
         Name of the dataset/market under study. If it is one one of the standard markets, 
-        i.e. PJM, NP, BE, FR, or DE, the dataset is automatically downloaded. If the name
-        is different, a dataset with a csv format should be place in the path_datasets_folder
+        i.e. ``"PJM"``, ``"NP"``, ``"BE"``, ``"FR"``, or ``"DE"``, the dataset is automatically downloaded. If the name
+        is different, a dataset with a csv format should be place in the ``path_datasets_folder``.
     years_test : int, optional
         Number of years (a year is 364 days) in the test dataset. This is necesary to extract the
         correct hyperparameter trials file
@@ -393,7 +395,7 @@ class DNN(object):
         self._read_best_hyperapameters()
 
     def _read_best_hyperapameters(self):
-        """Internal function that reads and extracts the subset of optimal hyperparameters
+        """Internal method that reads and extracts the subset of optimal hyperparameters
 
         The file that is read depends on the provided input parameters to the class
         """
@@ -412,7 +414,7 @@ class DNN(object):
         self.best_hyperparameters = format_best_trial(trials.best_trial)
 
     def _regularize_data(self, Xtrain, Xval, Xtest, Ytrain, Yval):
-        """Internal function to scale the input/outputs of the DNN.
+        """Internal method to scale the input/outputs of the DNN.
 
         It scales the inputs of the training, validation, and test datasets
         and the outputs of the training and validation datasets.
@@ -448,10 +450,12 @@ class DNN(object):
         return Xtrain, Xval, Xtest, Ytrain, Yval
 
     def recalibrate(self, Xtrain, Ytrain, Xval, Yval):
-        """Function that recalibrates the model.
+        """Method that recalibrates the model.
 
-        The function receives the training and validation dataset, and trains a :class:`DNNModel` model
-        using the set of optimal hyperparameters
+        The method receives the training and validation dataset, and trains a :class:`DNNModel` model
+        using the set of optimal hyperparameters that are found in ``path_hyperparameter_folder`` and
+        that are defined by the class attributes: ``experiment_id``, ``nlayers``, ``dataset``, ``years_test``, ``shuffle_train``, 
+        ``data_augmentation``, and ``calibration_window``
         
         Parameters
         ----------
@@ -484,9 +488,9 @@ class DNN(object):
         self.model.fit(Xtrain, Ytrain, Xval, Yval)
         
     def recalibrate_predict(self, Xtrain, Ytrain, Xval, Yval, Xtest):
-        """Function that first recalibrates the DNN model and then makes a prediction.
+        """Method that first recalibrates the DNN model and then makes a prediction.
 
-        The function receives the training and validation dataset, and trains a :class:`DNNModel` model
+        The method receives the training and validation dataset, and trains a :class:`DNNModel` model
         using the set of optimal hyperparameters. Then, using the inputs of the test dataset,
         it makes a new prediction.
         
@@ -509,14 +513,14 @@ class DNN(object):
             An array containing the predictions in the test dataset
         """
         self.recalibrate(Xtrain=Xtrain, Ytrain=Ytrain, Xval=Xval, Yval=Yval)        
-        Yp = self.predict(Xtest=Xtest)
+        Yp = self.predict(X=Xtest)
 
         self.model.clear_session()
 
         return Yp
 
     def predict(self, X):
-        """Function that makes a prediction using some given inputs
+        """Method that makes a prediction using some given inputs
         
         Parameters
         ----------
@@ -537,10 +541,11 @@ class DNN(object):
         return Yp
 
     def recalibrate_and_forecast_next_day(self, df, next_day_date):
-        """Function that builds an easy-to-use interface for daily recalibration and forecasting of the DNN model
+        """Method that builds an easy-to-use interface for daily recalibration and forecasting of the DNN model
         
-        The function receives a pandas dataframe and a date. Usually, the data should
-        correspond with the date of the next-day when using for daily recalibration.
+        The method receives a pandas dataframe ``df`` and a day ``next_day_date``. Then, it 
+        recalibrates the model using data up to the day before ``next_day_date`` and makes a prediction
+        for day ``next_day_date``.
         
         Parameters
         ----------
@@ -603,6 +608,8 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
     ``data_augmentation``, ``calibration_window``, and either the ``years_test`` or the same
     ``begin_test_date``/``end_test_date``
     
+    An example on how to use this function is provided :ref:`here<dnnex2>`.
+
     Parameters
     ----------
     experiment_id : str
@@ -620,8 +627,8 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
         Number of hidden layers in the neural network
     dataset : str, optional
         Name of the dataset/market under study. If it is one one of the standard markets, 
-        i.e. PJM, NP, BE, FR, or DE, the dataset is automatically downloaded. If the name
-        is different, a dataset with a csv format should be place in the path_datasets_folder
+        i.e. ``"PJM"``, ``"NP"``, ``"BE"``, ``"FR"``, or ``"DE"``, the dataset is automatically downloaded. If the name
+        is different, a dataset with a csv format should be place in the ``path_datasets_folder``.
     years_test : int, optional
         Number of years (a year is 364 days) in the test dataset. It is only used if 
         the arguments begin_test_date and end_test_date are not provided.
@@ -785,7 +792,7 @@ def format_best_trial(best_trial):
 
 def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, dfTest=None, percentage_val=0.25,
                         date_test=None, hyperoptimization=False, data_augmentation=False):
-    """Function to buil the X,Y pairs for training/test DNN models using dataframes and a list of
+    """Method to buil the X,Y pairs for training/test DNN models using dataframes and a list of
     the selected inputs
     
     Parameters
