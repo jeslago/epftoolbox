@@ -51,6 +51,38 @@ def read_data(path, dataset='PJM', years_test=2, begin_test_date=None, end_test_
     -------
     pandas.DataFrame, pandas.DataFrame
         Training dataset, testing dataset
+
+    Example
+    --------
+    >>> from epftoolbox.data import read_data
+    >>> df_train, df_test = read_data(path='.', dataset='PJM', begin_test_date='01-01-2016', 
+    ...                               end_test_date='01-02-2016')
+    Test datasets: 2016-01-01 00:00:00 - 2016-02-01 23:00:00
+    >>> df_train.tail()
+                             Price  Exogenous 1  Exogenous 2
+    Date                                                    
+    2015-12-31 19:00:00  29.513832     100700.0      13015.0
+    2015-12-31 20:00:00  28.440134      99832.0      12858.0
+    2015-12-31 21:00:00  26.701700      97033.0      12626.0
+    2015-12-31 22:00:00  23.262253      92022.0      12176.0
+    2015-12-31 23:00:00  22.262431      86295.0      11434.0
+    >>> df_test.head()
+                             Price  Exogenous 1  Exogenous 2
+    Date                                                    
+    2016-01-01 00:00:00  20.341321      76840.0      10406.0
+    2016-01-01 01:00:00  19.462741      74819.0      10075.0
+    2016-01-01 02:00:00  17.172706      73182.0       9795.0
+    2016-01-01 03:00:00  16.963876      72300.0       9632.0
+    2016-01-01 04:00:00  17.403722      72535.0       9566.0
+    >>> df_test.tail()
+                             Price  Exogenous 1  Exogenous 2
+    Date                                                    
+    2016-02-01 19:00:00  28.056729      99400.0      12680.0
+    2016-02-01 20:00:00  26.916456      97553.0      12495.0
+    2016-02-01 21:00:00  24.041505      93983.0      12267.0
+    2016-02-01 22:00:00  22.044896      88535.0      11747.0
+    2016-02-01 23:00:00  20.593339      82900.0      10974.0
+
     """
 
     # Checking if provided directory exist and if not create it
