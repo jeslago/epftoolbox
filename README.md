@@ -8,6 +8,8 @@ The library has been developed as part of the following article:
     electricity prices: A review of state-of-the-art algorithms, best practices and an 
     open-access benchmark". *Renewable and Sustainable Energy Reviews* (2020). Under Review.
 
+The library is distributed under the AGPL-3.0 License and it is built on top of scikit-learn, tensorflow, keras, hyperopt, statsmodels, numpy, and pandas. 
+
 Website: [https://epftoolbox.readthedocs.io/en/latest/](https://epftoolbox.readthedocs.io/en/latest/)
 
 ## Getting started

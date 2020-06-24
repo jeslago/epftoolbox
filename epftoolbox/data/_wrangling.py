@@ -116,12 +116,59 @@ class DataScaler(object):
         Type of scaling to be performed. Possible values are ``'Norm'``, ``'Norm1'``, ``'Std'``, 
         ``'Median'``, or ``'Invariant'``
 
-    Attributes
-    ----------
-    scaler : sklearn.preprocessing.MinMaxScaler, sklearn.preprocessing.StandardScaler, 
-        The scaler object used in the class can be one of the standard scalers in the scikit-lear
-        library or the median and asinh transformation as defined in `here <https://doi.org/10.1109/TPWRS.2017.2734563>`_.
-
+    Example
+    --------
+    >>> from epftoolbox.data import read_data
+    >>> from epftoolbox.data import DataScaler
+    >>> df_train, df_test = read_data(path='.', dataset='PJM', begin_test_date='01-01-2016', end_test_date='01-02-2016')
+    Test datasets: 2016-01-01 00:00:00 - 2016-02-01 23:00:00
+    >>> df_train.tail()
+                             Price  Exogenous 1  Exogenous 2
+    Date                                                    
+    2015-12-31 19:00:00  29.513832     100700.0      13015.0
+    2015-12-31 20:00:00  28.440134      99832.0      12858.0
+    2015-12-31 21:00:00  26.701700      97033.0      12626.0
+    2015-12-31 22:00:00  23.262253      92022.0      12176.0
+    2015-12-31 23:00:00  22.262431      86295.0      11434.0
+    >>> df_test.head()
+                             Price  Exogenous 1  Exogenous 2
+    Date                                                    
+    2016-01-01 00:00:00  20.341321      76840.0      10406.0
+    2016-01-01 01:00:00  19.462741      74819.0      10075.0
+    2016-01-01 02:00:00  17.172706      73182.0       9795.0
+    2016-01-01 03:00:00  16.963876      72300.0       9632.0
+    2016-01-01 04:00:00  17.403722      72535.0       9566.0
+    >>> Xtrain = df_train.values
+    >>> Xtest = df_train.values
+    >>> scaler = DataScaler('Norm')
+    >>> Xtrain_scaled = scaler.fit_transform(Xtrain)
+    >>> Xtest_scaled = scaler.transform(Xtest)
+    >>> Xtrain_inverse = scaler.inverse_transform(Xtrain_scaled)
+    >>> Xtest_inverse = scaler.inverse_transform(Xtest_scaled)
+    >>> Xtrain[:3,:]
+    array([[2.5464211e+01, 8.5049000e+04, 1.1509000e+04],
+           [2.3554578e+01, 8.2128000e+04, 1.0942000e+04],
+           [2.2122277e+01, 8.0729000e+04, 1.0639000e+04]])
+    >>> Xtrain_scaled[:3,:]
+    array([[0.03833877, 0.2736787 , 0.28415155],
+           [0.03608228, 0.24425597, 0.24633138],
+           [0.03438982, 0.23016409, 0.2261206 ]])
+    >>> Xtrain_inverse[:3,:]
+    array([[2.5464211e+01, 8.5049000e+04, 1.1509000e+04],
+           [2.3554578e+01, 8.2128000e+04, 1.0942000e+04],
+           [2.2122277e+01, 8.0729000e+04, 1.0639000e+04]])
+    >>> Xtest[:3,:]
+    array([[2.5464211e+01, 8.5049000e+04, 1.1509000e+04],
+           [2.3554578e+01, 8.2128000e+04, 1.0942000e+04],
+           [2.2122277e+01, 8.0729000e+04, 1.0639000e+04]])
+    >>> Xtest_scaled[:3,:]
+    array([[0.03833877, 0.2736787 , 0.28415155],
+           [0.03608228, 0.24425597, 0.24633138],
+           [0.03438982, 0.23016409, 0.2261206 ]])
+    >>> Xtest_inverse[:3,:]
+    array([[2.5464211e+01, 8.5049000e+04, 1.1509000e+04],
+           [2.3554578e+01, 8.2128000e+04, 1.0942000e+04],
+           [2.2122277e+01, 8.0729000e+04, 1.0639000e+04]])
     """
     
     def __init__(self, normalize):
@@ -230,6 +277,50 @@ def scaling(datasets, normalize):
     List, :class:`DataScaler`
         List of scaled datasets and the :class:`DataScaler` object used for scaling. Each dataset in the 
         list is a numpy.array.
+    
+    Example
+    --------
+    >>> from epftoolbox.data import read_data
+    >>> from epftoolbox.data import scaling
+    >>> df_train, df_test = read_data(path='.', dataset='PJM', begin_test_date='01-01-2016', end_test_date='01-02-2016')
+    Test datasets: 2016-01-01 00:00:00 - 2016-02-01 23:00:00
+    >>> df_train.tail()
+                             Price  Exogenous 1  Exogenous 2
+    Date                                                    
+    2015-12-31 19:00:00  29.513832     100700.0      13015.0
+    2015-12-31 20:00:00  28.440134      99832.0      12858.0
+    2015-12-31 21:00:00  26.701700      97033.0      12626.0
+    2015-12-31 22:00:00  23.262253      92022.0      12176.0
+    2015-12-31 23:00:00  22.262431      86295.0      11434.0
+    >>> df_test.head()
+                             Price  Exogenous 1  Exogenous 2
+    Date                                                    
+    2016-01-01 00:00:00  20.341321      76840.0      10406.0
+    2016-01-01 01:00:00  19.462741      74819.0      10075.0
+    2016-01-01 02:00:00  17.172706      73182.0       9795.0
+    2016-01-01 03:00:00  16.963876      72300.0       9632.0
+    2016-01-01 04:00:00  17.403722      72535.0       9566.0
+    >>> Xtrain = df_train.values
+    >>> Xtest = df_train.values
+    >>> [Xtrain_scaled, Xtest_scaled], scaler = scaling([Xtrain,Xtest],'Norm')
+    >>> Xtrain[:3,:]
+    array([[2.5464211e+01, 8.5049000e+04, 1.1509000e+04],
+           [2.3554578e+01, 8.2128000e+04, 1.0942000e+04],
+           [2.2122277e+01, 8.0729000e+04, 1.0639000e+04]])
+    >>> Xtrain_scaled[:3,:]
+    array([[0.03833877, 0.2736787 , 0.28415155],
+           [0.03608228, 0.24425597, 0.24633138],
+           [0.03438982, 0.23016409, 0.2261206 ]])
+    >>> Xtest[:3,:]
+    array([[2.5464211e+01, 8.5049000e+04, 1.1509000e+04],
+           [2.3554578e+01, 8.2128000e+04, 1.0942000e+04],
+           [2.2122277e+01, 8.0729000e+04, 1.0639000e+04]])           
+    >>> Xtest_scaled[:3,:]
+    array([[0.03833877, 0.2736787 , 0.28415155],
+           [0.03608228, 0.24425597, 0.24633138],
+           [0.03438982, 0.23016409, 0.2261206 ]])
+    >>> type(scaler)
+    <class 'epftoolbox.data._wrangling.DataScaler'>
 
     """
 

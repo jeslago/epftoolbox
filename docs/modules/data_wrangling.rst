@@ -19,9 +19,19 @@ scaling the training, validation, and test dataset. In this scenario, to have a 
 
 ------------
 
-.. autoclass:: epftoolbox.data.DataScaler
-   :members:
+.. currentmodule:: epftoolbox.data
+
+.. autoclass:: DataScaler
+
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DataScaler.fit_transform
+      ~DataScaler.inverse_transform
+      ~DataScaler.transform
 
 ------------
+
 .. autofunction:: epftoolbox.data.scaling
 
