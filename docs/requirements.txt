@@ -4,3 +4,5 @@ hyperopt>=0.2
 tensorflow>=2.2
 scikit-learn>=0.22
 statsmodels>=0.11
+matplotlib>=3
+scipy>=1.4
