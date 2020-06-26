@@ -21,7 +21,8 @@ _, df_test = read_data(path='.', dataset='NP', begin_test_date=forecasts.index[0
 
 real_price = df_test.loc[:, ['Price']]
 
-# Testing the univariate DM version, i.e. a DM test per price in a day
+# Testing the univariate DM to compare the forecasts of an ensemble of DNNs vs 
+# an ensemble of LEAR models
 DM(p_real=real_price.values.reshape(-1, 24), 
     p_pred_1=forecasts.loc[:, 'LEAR Ensemble'].values.reshape(-1, 24), 
     p_pred_2=forecasts.loc[:, 'DNN Ensemble'].values.reshape(-1, 24), 
