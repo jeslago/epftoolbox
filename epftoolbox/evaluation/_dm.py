@@ -17,15 +17,13 @@ def DM(p_real, p_pred_1, p_pred_2, norm=1, version='univariate'):
 
     Two versions of the test are possible:
 
-    1. A univariate version with as many independent tests performed as prices per day, i.e. 24
-    tests in most day-ahead electricity markets.
-    2. A multivariate with the test performed jointly for all hours using the multivariate 
-    loss differential series (see this 
-    `article <https://epftoolbox.readthedocs.io/en/latest/modules/cite.html>`_ for details.
+        1. A univariate version with as many independent tests performed as prices per day, i.e. 24
+        tests in most day-ahead electricity markets.
 
-    The univariate version of the test has the advantage of providing a deeper analysis as 
-    it indicates which forecast is significantly better for which hour of the days. The multivariate version 
-    grants a better representation of the results as it summarizes the comparison in a single p-value.
+        2. A multivariate with the test performed jointly for all hours using the multivariate 
+        loss differential series (see this 
+        `article <https://epftoolbox.readthedocs.io/en/latest/modules/cite.html>`_ for details.
+
     
     Parameters
     ----------
@@ -98,7 +96,7 @@ def DM(p_real, p_pred_1, p_pred_2, norm=1, version='univariate'):
 
     return p_value
 
-def plot_multivariate_DM_test(real_price, forecasts, norm=1, title='DM test', savefig=False):
+def plot_multivariate_DM_test(real_price, forecasts, norm=1, title='DM test', savefig=False, path=''):
     """Plotting the results of comparing forecasts using the multivariate DM test. 
     
     The resulting plot is a heat map in a chessboard shape. It represents the p-value
@@ -106,7 +104,7 @@ def plot_multivariate_DM_test(real_price, forecasts, norm=1, title='DM test', sa
     accurate than the forecast in the x-axis. In other words, p-values close to 0
     represent cases where the forecast in the x-axis is significantly more accurate
     than the forecast in the y-axis.
-
+    
     Parameters
     ----------
     real_price : pandas.DataFrame
@@ -117,7 +115,43 @@ def plot_multivariate_DM_test(real_price, forecasts, norm=1, title='DM test', sa
         in ``real_price``.
     norm : int, optional
         Norm used to compute the loss differential series. At the moment, this value must either
-        be 1 (for the norm-1) or 2 (for the norm-2).        
+        be 1 (for the norm-1) or 2 (for the norm-2).
+    title : str, optional
+        Title of the generated plot
+    savefig : bool, optional
+        Boolean that selects whether the figure should be saved in the current folder
+    path : str, optional
+        Path to save the figure. Only necessary when `savefig=True`
+    
+    Example
+    -------
+    >>> from epftoolbox.evaluation import DM, plot_multivariate_DM_test
+    >>> from epftoolbox.data import read_data
+    >>> import pandas as pd
+    >>> 
+    >>> # Generating forecasts of multiple models
+    >>> 
+    >>> # Download available forecast of the NP market available in the library repository
+    >>> # These forecasts accompany the original paper
+    >>> forecasts = pd.read_csv('https://raw.githubusercontent.com/jeslago/epftoolbox/master/' + 
+    ...                       'forecasts/Forecasts_NP_DNN_LEAR_ensembles.csv', index_col=0)
+    >>> 
+    >>> # Deleting the real price field as it the actual real price and not a forecast
+    >>> del forecasts['Real price']
+    >>> 
+    >>> # Transforming indices to datetime format
+    >>> forecasts.index = pd.to_datetime(forecasts.index)
+    >>> 
+    >>> # Extracting the real prices from the market
+    >>> _, df_test = read_data(path='.', dataset='NP', begin_test_date=forecasts.index[0], 
+    ...                        end_test_date=forecasts.index[-1])
+    Test datasets: 2016-12-27 00:00:00 - 2018-12-24 23:00:00
+    >>> 
+    >>> real_price = df_test.loc[:, ['Price']]
+    >>> 
+    >>> # Generating a plot to compare the models using the multivariate DM test
+    >>> plot_multivariate_DM_test(real_price=real_price, forecasts=forecasts)
+    
     """
 
     # Computing the multivariate DM test for each forecast pair
@@ -143,6 +177,7 @@ def plot_multivariate_DM_test(real_price, forecasts, norm=1, title='DM test', sa
                                     blue.reshape(-1, 1)], axis=1)
     rgb_color_map = mpl.colors.ListedColormap(rgb_color_map)
 
+    # Generating figure
     plt.imshow(p_values.astype(float).values, cmap=rgb_color_map, vmin=0, vmax=0.1)
     plt.xticks(range(len(forecasts.columns)), forecasts.columns, rotation=90.)
     plt.yticks(range(len(forecasts.columns)), forecasts.columns)

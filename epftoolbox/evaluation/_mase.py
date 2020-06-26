@@ -63,7 +63,7 @@ def MASE(p_real, p_pred, p_real_in, m=None, freq='1H'):
     >>> # Download available forecast of the NP market available in the library repository
     >>> # These forecasts accompany the original paper
     >>> forecast = pd.read_csv('https://raw.githubusercontent.com/jeslago/epftoolbox/master/' + 
-    ...                       'forecasts/Forecasts_NP_DNN_Lasso_ensembles.csv', index_col=0)
+    ...                       'forecasts/Forecasts_NP_DNN_LEAR_ensembles.csv', index_col=0)
     >>> 
     >>> # Transforming indices to datetime format
     >>> forecast.index = pd.to_datetime(forecast.index)
