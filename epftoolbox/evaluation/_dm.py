@@ -46,7 +46,54 @@ def DM(p_real, p_pred_1, p_pred_2, norm=1, version='univariate'):
     float, numpy.ndarray
         The p-value after performing the test. It is a float in the case of the multivariate test
         and a numpy array with a p-value per hour for the univariate test
+
+    Example
+    -------
+    >>> from epftoolbox.evaluation import DM
+    >>> from epftoolbox.data import read_data
+    >>> import pandas as pd
+    >>> 
+    >>> # Generating forecasts of multiple models
+    >>> 
+    >>> # Download available forecast of the NP market available in the library repository
+    >>> # These forecasts accompany the original paper
+    >>> forecasts = pd.read_csv('https://raw.githubusercontent.com/jeslago/epftoolbox/master/' + 
+    ...                       'forecasts/Forecasts_NP_DNN_LEAR_ensembles.csv', index_col=0)
+    >>> 
+    >>> # Deleting the real price field as it the actual real price and not a forecast
+    >>> del forecasts['Real price']
+    >>> 
+    >>> # Transforming indices to datetime format
+    >>> forecasts.index = pd.to_datetime(forecasts.index)
+    >>> 
+    >>> # Extracting the real prices from the market
+    >>> _, df_test = read_data(path='.', dataset='NP', begin_test_date=forecasts.index[0], 
+    ...                        end_test_date=forecasts.index[-1])
+    Test datasets: 2016-12-27 00:00:00 - 2018-12-24 23:00:00
+    >>> 
+    >>> real_price = df_test.loc[:, ['Price']]
+    >>> 
+    >>> # Testing the univariate DM version on an ensemble of DNN models versus an ensemble
+    >>> # of LEAR models
+    >>> DM(p_real=real_price.values.reshape(-1, 24), 
+    ...     p_pred_1=forecasts.loc[:, 'LEAR Ensemble'].values.reshape(-1, 24), 
+    ...     p_pred_2=forecasts.loc[:, 'DNN Ensemble'].values.reshape(-1, 24), 
+    ...     norm=1, version='univariate')
+    array([9.99999944e-01, 9.97562415e-01, 8.10333949e-01, 8.85201928e-01,
+           9.33505978e-01, 8.78116764e-01, 1.70135981e-02, 2.37961920e-04,
+           5.52337353e-04, 6.07843340e-05, 1.51249750e-03, 1.70415008e-03,
+           4.22319907e-03, 2.32808010e-03, 3.55958698e-03, 4.80663621e-03,
+           1.64841032e-04, 4.55829140e-02, 5.86609688e-02, 1.98878375e-03,
+           1.04045731e-01, 8.71203187e-02, 2.64266732e-01, 4.06676195e-02])
+    >>> 
+    >>> # Testing the multivariate DM version
+    >>> DM(p_real=real_price.values.reshape(-1, 24), 
+    ...     p_pred_1=forecasts.loc[:, 'LEAR Ensemble'].values.reshape(-1, 24), 
+    ...     p_pred_2=forecasts.loc[:, 'DNN Ensemble'].values.reshape(-1, 24), 
+    ...     norm=1, version='multivariate')
+    0.003005725748326471
     """
+
     # Checking that all time series have the same shape
     if p_real.shape != p_pred_1.shape or p_real.shape != p_pred_2.shape:
         raise ValueError('The three time series must have the same shape')

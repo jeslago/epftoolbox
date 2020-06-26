@@ -1,6 +1,6 @@
-==================
+========================
 epftoolbox.models.LEAR
-==================
+========================
 
 .. currentmodule:: epftoolbox.models
 
