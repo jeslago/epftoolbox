@@ -11,7 +11,10 @@ dataset = 'PJM'
 # Number of years (a year is 364 days) in the test dataset.
 years_test = 2
 
-# Boolean that selects whether the validation and training datasets are shuffled
+# Boolean that selects whether the validation and training datasets were shuffled when
+# performing the hyperparameter optimization. Note that it does not select whether
+# shuffling is used for recalibration as for recalibration the validation and the
+# training datasets are always shuffled.
 shuffle_train = 1
 
 # Boolean that selects whether a data augmentation technique for DNNs is used

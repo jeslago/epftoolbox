@@ -288,7 +288,8 @@ class DNNModel(object):
                 countNoImprovement += 1
 
             if countNoImprovement >= self.epochs_early_stopping:
-                self._display_info_training(bestError, bestMAE, countNoImprovement)
+                if self.verbose:
+                    self._display_info_training(bestError, bestMAE, countNoImprovement)
                 break
 
             # Displaying final information
@@ -367,7 +368,10 @@ class DNN(object):
         Number of years (a year is 364 days) in the test dataset. This is necesary to extract the
         correct hyperparameter trials file
     shuffle_train : bool, optional
-        Boolean that selects whether the validation and training datasets are shuffled
+        Boolean that selects whether the validation and training datasets were shuffled when
+        performing the hyperparameter optimization. Note that it does not select whether
+        shuffling is used for recalibration as for recalibration the validation and the
+        training datasets are always shuffled.
     data_augmentation : bool, optional
         Boolean that selects whether a data augmentation technique for electricity price forecasting
         is employed
@@ -377,7 +381,7 @@ class DNN(object):
     """
 
     def __init__(self, experiment_id, path_hyperparameter_folder=os.path.join('.', 'experimental_files'), 
-                 nlayers=2, dataset='PJM', years_test=2, shuffle_train=0, data_augmentation=0, 
+                 nlayers=2, dataset='PJM', years_test=2, shuffle_train=1, data_augmentation=0, 
                  calibration_window=4):
 
         # Checking if provided directories exist and if not raise exception
@@ -454,8 +458,8 @@ class DNN(object):
 
         The method receives the training and validation dataset, and trains a :class:`DNNModel` model
         using the set of optimal hyperparameters that are found in ``path_hyperparameter_folder`` and
-        that are defined by the class attributes: ``experiment_id``, ``nlayers``, ``dataset``, ``years_test``, ``shuffle_train``, 
-        ``data_augmentation``, and ``calibration_window``
+        that are defined by the class attributes: ``experiment_id``, ``nlayers``, ``dataset``, 
+        ``years_test``, ``shuffle_train``, ``data_augmentation``, and ``calibration_window``
         
         Parameters
         ----------
@@ -576,11 +580,10 @@ class DNN(object):
         # we provide as parameter the date of interest so that Xtest and Ytest only reflect that
         Xtrain, Ytrain, Xval, Yval, Xtest, _, _ = \
             _build_and_split_XYs(dfTrain=df_train, features=self.best_hyperparameters, 
-                                shuffle_train=self.shuffle_train, dfTest=df_test, date_test=next_day_date,
+                                shuffle_train=True, dfTest=df_test, date_test=next_day_date,
                                 data_augmentation=self.data_augmentation, 
                                 n_exogenous_inputs=len(df_train.columns) - 1)
 
-        # Normalizing the input and outputs if needed
         # Normalizing the input and outputs if needed
         Xtrain, Xval, Xtest, Ytrain, Yval = \
             self._regularize_data(Xtrain=Xtrain, Xval=Xval, Xtest=Xtest, Ytrain=Ytrain, Yval=Yval)
@@ -643,7 +646,10 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
         years_test argument. end_test_date should either be a string with the following 
         format d/m/Y H:M, or a datetime object       
     shuffle_train : bool, optional
-        Boolean that selects whether the validation and training datasets are shuffled
+        Boolean that selects whether the validation and training datasets were shuffled when
+        performing the hyperparameter optimization. Note that it does not select whether
+        shuffling is used for recalibration as for recalibration the validation and the
+        training datasets are always shuffled.
     data_augmentation : bool, optional
         Boolean that selects whether a data augmentation technique for electricity price forecasting
         is employed
@@ -672,7 +678,7 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
     # Defining unique name to save the forecast
 
     forecast_file_name = 'DNN_forecast_nl' + str(nlayers) + '_dat' + str(dataset) + \
-                         '_YT' + str(years_test) + '_SF' + str(shuffle_train) + \
+                         '_YT' + str(years_test) + '_SFH' + str(shuffle_train) + \
                          '_DA' * data_augmentation + '_CW' + str(calibration_window) + \
                          '_' + str(experiment_id) + '.csv'
 
@@ -705,8 +711,9 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
         forecast_dates = forecast.index
 
     model = DNN(experiment_id=experiment_id, path_hyperparameter_folder=path_hyperparameter_folder,
-                nlayers=nlayers, dataset=dataset, years_test=years_test, shuffle_train=shuffle_train, 
-                data_augmentation=data_augmentation, calibration_window=calibration_window)
+                nlayers=nlayers, dataset=dataset, years_test=years_test, 
+                shuffle_train=shuffle_train, data_augmentation=data_augmentation, 
+                calibration_window=calibration_window)
 
 
     # For loop over the recalibration dates
@@ -721,8 +728,7 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
 
         # Recalibrating the model with the most up-to-date available data and making a prediction
         # for the next day
-        Yp = model.recalibrate_and_forecast_next_day(
-            df=data_available, next_day_date=date, calibration_window=calibration_window)
+        Yp = model.recalibrate_and_forecast_next_day(df=data_available, next_day_date=date)
 
         # Saving the current prediction
         forecast.loc[date, :] = Yp
@@ -762,8 +768,7 @@ def format_best_trial(best_trial):
     unformatted_hyperparameters = best_trial['misc']['vals']
 
     formatted_hyperparameters = {}
-    import ipdb
-    ipdb.set_trace(frame=None, context=3)
+
     # Removing list format
     for key, val in unformatted_hyperparameters.items():
         if len(val) > 0:

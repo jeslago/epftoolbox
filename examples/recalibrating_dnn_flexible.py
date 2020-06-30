@@ -24,7 +24,8 @@ parser.add_argument("--years_test", type=int, default=2,
                     ' begin_test_date and end_test_date are not provided.')
 
 parser.add_argument("--shuffle_train", type=int, default=1, 
-                    help='Boolean that selects whether the validation and training datasets are shuffled')
+                    help='Boolean that selects whether the validation and training datasets were' +
+                    ' shuffled when performing the hyperparameter optimization.')
 
 parser.add_argument("--data_augmentation", type=int, default=0, 
                     help='Boolean that selects whether a data augmentation technique for DNNs is used')
@@ -124,10 +125,7 @@ for date in forecast_dates:
 
     # Recalibrating the model with the most up-to-date available data and making a prediction
     # for the next day
-    Yp = model.recalibrate_and_forecast_next_day(df=data_available, next_day_date=date, 
-                                                 calibration_window=calibration_window, 
-                                                 shuffle_train=shuffle_train, 
-                                                 data_augmentation=data_augmentation)
+    Yp = model.recalibrate_and_forecast_next_day(df=data_available, next_day_date=date)
 
     # Saving the current prediction
     forecast.loc[date, :] = Yp
