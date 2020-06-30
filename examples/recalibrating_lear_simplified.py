@@ -1,3 +1,11 @@
+"""
+Simplified example for using the LEAR model for forecasting prices with daily recalibration
+"""
+
+# Author: Jesus Lago
+
+# License: AGPL-3.0 License
+
 from epftoolbox.models import evaluate_lear_in_test_dataset
 import os
 

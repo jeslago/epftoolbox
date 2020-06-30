@@ -1,8 +1,17 @@
+"""
+Functions to compute and plot the univariate and multivariate versions of the Diebold-Mariano (DM) test.
+"""
+
+# Author: Jesus Lago
+
+# License: AGPL-3.0 License
+
 import numpy as np
 from scipy import stats
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+
 
 def DM(p_real, p_pred_1, p_pred_2, norm=1, version='univariate'):
     """Function that performs the one-sided DM test in the contex of electricity price forecasting

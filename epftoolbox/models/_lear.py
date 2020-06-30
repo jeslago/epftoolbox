@@ -1,3 +1,10 @@
+"""
+Classes and functions to implement the LEAR model for electricity price forecasting
+"""
+
+# Author: Jesus Lago
+
+# License: AGPL-3.0 License
 
 import numpy as np
 import pandas as pd
@@ -11,6 +18,7 @@ from epftoolbox.evaluation import MAE, sMAPE
 
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
+
 
 class LEAR(object):
     """Class to build a LEAR model, recalibrate it, and use it to predict DA electricity prices.

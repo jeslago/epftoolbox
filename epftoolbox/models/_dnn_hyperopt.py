@@ -1,3 +1,12 @@
+"""
+Classes and functions to perform hyperparameter and feature selection for the DNN model 
+for electricity price forecasting
+"""
+
+# Author: Jesus Lago
+
+# License: AGPL-3.0 License
+
 import pandas as pd
 import numpy as np
 from hyperopt import fmin, tpe, hp, Trials, STATUS_OK

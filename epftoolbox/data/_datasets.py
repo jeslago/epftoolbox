@@ -1,3 +1,12 @@
+"""
+Function to read electricity market data either locally or from an online database
+"""
+
+# Author: Jesus Lago
+
+# License: AGPL-3.0 License
+
+
 import pandas as pd
 import os
 

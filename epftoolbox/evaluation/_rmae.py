@@ -1,6 +1,15 @@
+"""
+Function that implements the relative mean absolute error (rMAE) metric.
+"""
+
+# Author: Jesus Lago
+
+# License: AGPL-3.0 License
+
 import numpy as np
 from epftoolbox.evaluation._ancillary_functions import _process_inputs_for_metrics, naive_forecast, _transform_input_prices_for_naive_forecast
 from epftoolbox.evaluation import MAE
+
 
 def rMAE(p_real, p_pred, m=None, freq='1H'):
 

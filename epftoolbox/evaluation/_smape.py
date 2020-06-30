@@ -1,5 +1,15 @@
+"""
+Function that implements the symmetric mean absolute percentage error (sMAPE) metric.
+"""
+
+# Author: Jesus Lago
+
+# License: AGPL-3.0 License
+
+
 import numpy as np
 from epftoolbox.evaluation._ancillary_functions import _process_inputs_for_metrics
+
 
 def sMAPE(p_real, p_pred):
 

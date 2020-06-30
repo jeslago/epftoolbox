@@ -1,3 +1,13 @@
+"""
+Classes and functions to implement the DNN model for electricity price forecasting. The module does not
+include the hyperparameter optimization functions; these are included in the module
+_dnn_hyperopt.py
+"""
+
+# Author: Jesus Lago
+
+# License: AGPL-3.0 License
+
 import numpy as np
 import pandas as pd
 import time
@@ -14,6 +24,7 @@ import tensorflow.keras.backend as K
 from epftoolbox.evaluation import MAE, sMAPE
 from epftoolbox.data import scaling
 from epftoolbox.data import read_data
+
 
 class DNNModel(object):
 

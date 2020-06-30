@@ -1,3 +1,12 @@
+"""
+Classes and functions to implement data wrangling operations. At the moment, this is limited to
+data scaling.
+"""
+
+# Author: Jesus Lago
+
+# License: AGPL-3.0 License
+
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from statsmodels.robust import mad

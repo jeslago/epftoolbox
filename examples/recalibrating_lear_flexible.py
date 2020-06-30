@@ -1,3 +1,11 @@
+"""
+Example for using the LEAR model for forecasting prices with daily recalibration
+"""
+
+# Author: Jesus Lago
+
+# License: AGPL-3.0 License
+
 import pandas as pd
 import numpy as np
 import argparse

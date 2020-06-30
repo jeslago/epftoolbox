@@ -1,3 +1,12 @@
+"""
+Example for optimizing the hyperparameter and features of the DNN model
+"""
+
+# Author: Jesus Lago
+
+# License: AGPL-3.0 License
+
+
 from epftoolbox.models import hyperparameter_optimizer
 
 # Number of layers in DNN

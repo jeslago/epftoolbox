@@ -1,3 +1,8 @@
+"""
+Ancillary functions to compute accuracy metrics and statistical tests in the context of electricity price
+forecasting
+"""
+
 import numpy as np
 import pandas as pd
 
