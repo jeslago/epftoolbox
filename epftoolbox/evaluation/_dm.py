@@ -244,6 +244,6 @@ def plot_multivariate_DM_test(real_price, forecasts, norm=1, title='DM test', sa
 
     if savefig:
         plt.savefig(title + '.png', dpi=300)
-        plt.savefig(title + '.epse')
+        plt.savefig(title + '.eps')
 
     plt.show()
