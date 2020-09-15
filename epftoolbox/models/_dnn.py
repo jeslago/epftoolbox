@@ -417,7 +417,8 @@ class DNN(object):
 
         # Defining the trials file name used to extract the optimal hyperparameters
         trials_file_name = \
-            'hyper_nl' + str(self.nlayers) + '_dat' + str(self.dataset) + '_YT' + str(self.years_test) + \
+            'DNN_hyperparameters_nl' + str(self.nlayers) + \
+            '_dat' + str(self.dataset) + '_YT' + str(self.years_test) + \
             '_SF' * (self.shuffle_train) + '_DA' * (self.data_augmentation) + \
             '_CW' + str(self.calibration_window) + '_' + str(self.experiment_id)
 
@@ -492,7 +493,7 @@ class DNN(object):
 
         self.model = DNNModel(neurons=neurons, n_features=Xtrain.shape[-1], 
                               dropout=self.best_hyperparameters['dropout'], 
-                              batch_normalization=self.best_hyperparameters['BN'], 
+                              batch_normalization=self.best_hyperparameters['batch_normalization'], 
                               lr=self.best_hyperparameters['lr'], verbose=False,
                               optimizer='adam', activation=self.best_hyperparameters['activation'],
                               epochs_early_stopping=20, scaler=self.scaler, loss='mae',
