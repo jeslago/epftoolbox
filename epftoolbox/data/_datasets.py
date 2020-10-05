@@ -116,6 +116,7 @@ def read_data(path, dataset='PJM', years_test=2, begin_test_date=None, end_test_
             data.to_csv(file_path)
     else:
         try:
+            file_path = os.path.join(path, dataset + '.csv')
             data = pd.read_csv(file_path, index_col=0)
         except IOError as e:
             raise IOError("%s: %s" % (path, e.strerror))
