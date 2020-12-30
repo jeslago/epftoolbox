@@ -80,12 +80,6 @@ def _build_space(nlayer, data_augmentation, n_exogenous_inputs):
         space['In: Exog-' + str(n_ex) + ' D'] = hp.choice('In: Exog-' + str(n_ex) + ' D', [False, True])
         space['In: Exog-' + str(n_ex) + ' D-1'] = hp.choice('In: Exog-' + str(n_ex) + ' D-1', [False, True])
         space['In: Exog-' + str(n_ex) + ' D-7'] = hp.choice('In: Exog-' + str(n_ex) + ' D-7', [False, True])
-
-    if data_augmentation:
-        # For the multiple output model, we allow as an option to use the 24 horizons in a day
-        # during training, i.e. not only predict 00 to 23, but 01 to 24, 02 to 01, etc.
-        # For testing the evaluation is normal
-        space['24 datapoints per day'] = hp.choice('24 datapoints per day', [False, True])
     
     return space
 
