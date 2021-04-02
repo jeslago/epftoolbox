@@ -1,3 +1,7 @@
+'''
+Functions to compute and plot the univariate and multivariate versions of the Giacomini-White (GW) test for Conditional Predictive Ability
+'''
+
 import numpy as np
 import scipy
 from scipy import stats

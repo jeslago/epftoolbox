@@ -1,39 +1,27 @@
-"""
-Functions to compute and plot the univariate and multivariate versions of the Diebold-Mariano (DM) test.
-"""
-
-# Author: Jesus Lago
-
-# License: AGPL-3.0 License
+'''
+Functions to compute and plot the univariate and multivariate versions of the
+Giacomini-White (GW) test for Conditional Predictive Ability
+'''
 
 import numpy as np
+import scipy
 from scipy import stats
 import pandas as pd
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 
-
-def DM(p_real, p_pred_1, p_pred_2, norm=1, version='univariate'):
-    """Function that performs the one-sided DM test in the contex of electricity price forecasting
+def GW(p_real, p_pred_1, p_pred_2, norm=1, version='univariate'):
+    """Perform the one-sided GW test
     
-    The test compares whether there is a difference in predictive accuracy between two forecast 
-    ``p_pred_1`` and ``p_pred_2``. Particularly, the one-sided DM test evaluates the null hypothesis H0 
-    of the forecasting errors of  ``p_pred_2`` being larger (worse) than the forecasting
-    errors ``p_pred_1`` vs the alternative hypothesis H1 of the errors of ``p_pred_2`` being smaller (better).
-    Hence, rejecting H0 means that the forecast ``p_pred_2`` is significantly more accurate
-    that forecast ``p_pred_1``. (Note that this is an informal definition. For a formal one we refer to 
+    The test compares the Conditional Predictive Accuracy of two forecasts
+    ``p_pred_1`` and ``p_pred_2``. The null H0 is that the CPA of errors ``p_pred_1``
+    is higher (better) or equal to the errors of ``p_pred_2`` vs. the alternative H1
+    that the CPA of ``p_pred_2`` is higher. Rejecting H0 means that the forecasts
+    ``p_pred_2`` are significantly more accurate than forecasts ``p_pred_1``.
+    (Note that this is an informal definition. For a formal one we refer 
     `here <https://epftoolbox.readthedocs.io/en/latest/modules/cite.html>`_)
 
-    Two versions of the test are possible:
 
-        1. A univariate version with as many independent tests performed as prices per day, i.e. 24
-        tests in most day-ahead electricity markets.
-
-        2. A multivariate with the test performed jointly for all hours using the multivariate 
-        loss differential series (see this 
-        `article <https://epftoolbox.readthedocs.io/en/latest/modules/cite.html>`_ for details.
-
-    
     Parameters
     ----------
     p_real : numpy.ndarray
@@ -47,9 +35,9 @@ def DM(p_real, p_pred_1, p_pred_2, norm=1, version='univariate'):
         Norm used to compute the loss differential series. At the moment, this value must either
         be 1 (for the norm-1) or 2 (for the norm-2).
     version : str, optional
-        Version of the test as defined in 
+        Version of the test as defined in
         `here <https://epftoolbox.readthedocs.io/en/latest/modules/cite.html>`_. It can have two values:
-        ``'univariate`` or ``'multivariate``      
+        ``'univariate'`` or ``'multivariate'``
     Returns
     -------
     float, numpy.ndarray
@@ -58,7 +46,7 @@ def DM(p_real, p_pred_1, p_pred_2, norm=1, version='univariate'):
 
     Example
     -------
-    >>> from epftoolbox.evaluation import DM
+    >>> from epftoolbox.evaluation import GW
     >>> from epftoolbox.data import read_data
     >>> import pandas as pd
     >>> 
@@ -82,27 +70,26 @@ def DM(p_real, p_pred_1, p_pred_2, norm=1, version='univariate'):
     >>> 
     >>> real_price = df_test.loc[:, ['Price']]
     >>> 
-    >>> # Testing the univariate DM version on an ensemble of DNN models versus an ensemble
+    >>> # Testing the univariate GW version on an ensemble of DNN models versus an ensemble
     >>> # of LEAR models
-    >>> DM(p_real=real_price.values.reshape(-1, 24), 
+    >>> GW(p_real=real_price.values.reshape(-1, 24), 
     ...     p_pred_1=forecasts.loc[:, 'LEAR Ensemble'].values.reshape(-1, 24), 
     ...     p_pred_2=forecasts.loc[:, 'DNN Ensemble'].values.reshape(-1, 24), 
     ...     norm=1, version='univariate')
-    array([9.99999944e-01, 9.97562415e-01, 8.10333949e-01, 8.85201928e-01,
-           9.33505978e-01, 8.78116764e-01, 1.70135981e-02, 2.37961920e-04,
-           5.52337353e-04, 6.07843340e-05, 1.51249750e-03, 1.70415008e-03,
-           4.22319907e-03, 2.32808010e-03, 3.55958698e-03, 4.80663621e-03,
-           1.64841032e-04, 4.55829140e-02, 5.86609688e-02, 1.98878375e-03,
-           1.04045731e-01, 8.71203187e-02, 2.64266732e-01, 4.06676195e-02])
+    array([1.00000000e+00, 1.00000000e+00, 1.00000000e+00, 1.00000000e+00,
+           1.00000000e+00, 1.00000000e+00, 1.03217562e-01, 2.63206239e-03,
+           5.23325510e-03, 5.90845414e-04, 6.55116487e-03, 9.85034605e-03,
+           3.34250412e-02, 1.80798591e-02, 2.74761848e-02, 3.19436776e-02,
+           8.39512169e-04, 2.11907847e-01, 5.79718600e-02, 8.73956638e-03,
+           4.30521699e-01, 2.67395381e-01, 6.33448562e-01, 1.99826993e-01])
     >>> 
-    >>> # Testing the multivariate DM version
-    >>> DM(p_real=real_price.values.reshape(-1, 24), 
+    >>> # Testing the multivariate GW version
+    >>> GW(p_real=real_price.values.reshape(-1, 24), 
     ...     p_pred_1=forecasts.loc[:, 'LEAR Ensemble'].values.reshape(-1, 24), 
     ...     p_pred_2=forecasts.loc[:, 'DNN Ensemble'].values.reshape(-1, 24), 
     ...     norm=1, version='multivariate')
-    0.003005725748326471
+    0.017598166936843906
     """
-
     # Checking that all time series have the same shape
     if p_real.shape != p_pred_1.shape or p_real.shape != p_pred_2.shape:
         raise ValueError('The three time series must have the same shape')
@@ -112,48 +99,65 @@ def DM(p_real, p_pred_1, p_pred_2, norm=1, version='univariate'):
         raise ValueError('The time series must have shape (n_days, n_prices_day')
 
     # Computing the errors of each forecast
-    errors_pred_1 = p_real - p_pred_1
-    errors_pred_2 = p_real - p_pred_2
+    loss1 = p_real - p_pred_1
+    loss2 = p_real - p_pred_2
+    tau = 1 # Test is only implemented for a single-step forecasts
+    if norm == 1:
+        d = np.abs(loss1) - np.abs(loss2)
+    else:
+        d = loss1**2 - loss2**2
+    TT = np.max(d.shape)
 
-    # Computing the test statistic
+    # Conditional Predictive Ability test
     if version == 'univariate':
+        GWstat = np.inf * np.ones((np.min(d.shape), ))
+        for h in range(24):
+            instruments = np.stack([np.ones_like(d[:-tau, h]), d[:-tau, h]])
+            dh = d[tau:, h]
+            T = TT - tau
+            
+            instruments = np.array(instruments, ndmin=2)
 
-        # Computing the loss differential series for the univariate test
-        if norm == 1:
-            d = np.abs(errors_pred_1) - np.abs(errors_pred_2)
-        if norm == 2:
-            d = errors_pred_1**2 - errors_pred_2**2
-
-        # Computing the loss differential size
-        N = d.shape[0]
-
-        # Computing the test statistic
-        mean_d = np.mean(d, axis=0)
-        var_d = np.var(d, ddof=0, axis=0)
-        DM_stat = mean_d / np.sqrt((1 / N) * var_d)
+            reg = np.ones_like(instruments) * -999
+            for jj in range(instruments.shape[0]):
+                reg[jj, :] = instruments[jj, :] * dh
+        
+            if tau == 1:
+                betas = np.linalg.lstsq(reg.T, np.ones(T), rcond=None)[0]
+                err = np.ones((T, 1)) - np.dot(reg.T, betas)
+                r2 = 1 - np.mean(err**2)
+                GWstat[h] = T * r2
+            else:
+                raise NotImplementedError('Only one step forecasts are implemented')
 
     elif version == 'multivariate':
-
-        # Computing the loss differential series for the multivariate test
-        if norm == 1:
-            d = np.mean(np.abs(errors_pred_1), axis=1) - np.mean(np.abs(errors_pred_2), axis=1)
-        if norm == 2:
-            d = np.mean(errors_pred_1**2, axis=1) - np.mean(errors_pred_2**2, axis=1)
-
-        # Computing the loss differential size
-        N = d.size
-
-        # Computing the test statistic
-        mean_d = np.mean(d)
-        var_d = np.var(d, ddof=0)
-        DM_stat = mean_d / np.sqrt((1 / N) * var_d)
+        d = d.mean(axis=1)
+        instruments = np.stack([np.ones_like(d[:-tau]), d[:-tau]])
+        d = d[tau:]
+        T = TT - tau
         
-    p_value = 1 - stats.norm.cdf(DM_stat)
+        instruments = np.array(instruments, ndmin=2)
 
-    return p_value
+        reg = np.ones_like(instruments) * -999
+        for jj in range(instruments.shape[0]):
+            reg[jj, :] = instruments[jj, :] * d
+    
+        if tau == 1:
+            betas = np.linalg.lstsq(reg.T, np.ones(T), rcond=None)[0]
+            err = np.ones((T, 1)) - np.dot(reg.T, betas)
+            r2 = 1 - np.mean(err**2)
+            GWstat = T * r2
+        else:
+            raise NotImplementedError('Only one step forecasts are implemented')
+    
+    GWstat *= np.sign(np.mean(d, axis=0))
+    
+    q = reg.shape[0]
+    pval = 1 - scipy.stats.chi2.cdf(GWstat, q)
+    return pval
 
-def plot_multivariate_DM_test(real_price, forecasts, norm=1, title='DM test', savefig=False, path=''):
-    """Plotting the results of comparing forecasts using the multivariate DM test. 
+def plot_multivariate_GW_test(real_price, forecasts, norm=1, title='GW test', savefig=False, path=''):
+    """Plotting the results of comparing forecasts using the multivariate GW test. 
     
     The resulting plot is a heat map in a chessboard shape. It represents the p-value
     of the null hypothesis of the forecast in the y-axis being significantly more
@@ -181,7 +185,7 @@ def plot_multivariate_DM_test(real_price, forecasts, norm=1, title='DM test', sa
     
     Example
     -------
-    >>> from epftoolbox.evaluation import DM, plot_multivariate_DM_test
+    >>> from epftoolbox.evaluation import GW, plot_multivariate_GW_test
     >>> from epftoolbox.data import read_data
     >>> import pandas as pd
     >>> 
@@ -205,12 +209,12 @@ def plot_multivariate_DM_test(real_price, forecasts, norm=1, title='DM test', sa
     >>> 
     >>> real_price = df_test.loc[:, ['Price']]
     >>> 
-    >>> # Generating a plot to compare the models using the multivariate DM test
-    >>> plot_multivariate_DM_test(real_price=real_price, forecasts=forecasts)
+    >>> # Generating a plot to compare the models using the multivariate GW test
+    >>> plot_multivariate_GW_test(real_price=real_price, forecasts=forecasts)
     
     """
 
-    # Computing the multivariate DM test for each forecast pair
+    # Computing the multivariate GW test for each forecast pair
     p_values = pd.DataFrame(index=forecasts.columns, columns=forecasts.columns) 
 
     for model1 in forecasts.columns:
@@ -220,7 +224,7 @@ def plot_multivariate_DM_test(real_price, forecasts, norm=1, title='DM test', sa
             if model1 == model2:
                 p_values.loc[model1, model2] = 1
             else:
-                p_values.loc[model1, model2] = DM(p_real=real_price.values.reshape(-1, 24), 
+                p_values.loc[model1, model2] = GW(p_real=real_price.values.reshape(-1, 24), 
                                                   p_pred_1=forecasts.loc[:, model1].values.reshape(-1, 24), 
                                                   p_pred_2=forecasts.loc[:, model2].values.reshape(-1, 24), 
                                                   norm=norm, version='multivariate')
