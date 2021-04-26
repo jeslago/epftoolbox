@@ -37,6 +37,6 @@ To learn how to use the library, there are three possibilities:
 
 3. Finally, the library and its functionalities are explained in detail in the following article:
 
-    J. Lago, G. Marcjasz, B. De Schutter, R. Weron. "Forecasting day-ahead electricity prices: A review of state-of-the-art algorithms, best practices and an open-access benchmark". *Applied Energy* (2021). In Press.
+- Jesus Lago, Grzegorz Marcjasz, Bart De Schutter, Rafał Weron. "Forecasting day-ahead electricity prices: A review of state-of-the-art algorithms, best practices and an open-access benchmark". *Applied Energy* 2021; 293:116983. [https://doi.org/10.1016/j.apenergy.2021.116983](https://doi.org/10.1016/j.apenergy.2021.116983).
 
 For the most comprehensive introduction to the library, the user should first read the article, then the documentation, and finally go through the available :ref:`examples<examples>`.
