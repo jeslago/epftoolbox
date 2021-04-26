@@ -6,7 +6,7 @@ The library has been developed as part of the following article:
 
     Jesus Lago, Grzegorz Marcjasz, Bart De Schutter, Rafał Weron. "Forecasting day-ahead 
     electricity prices: A review of state-of-the-art algorithms, best practices and an 
-    open-access benchmark". *Renewable and Sustainable Energy Reviews* (2020). Under Review.
+    open-access benchmark". Applied Energy (2021). In Press.
 
 The library is distributed under the AGPL-3.0 License and it is built on top of scikit-learn, tensorflow, keras, hyperopt, statsmodels, numpy, and pandas. 
 
@@ -54,7 +54,7 @@ If you use the epftoolbox in a scientific publication, we would appreciate citat
 
     Jesus Lago, Grzegorz Marcjasz, Bart De Schutter, Rafał Weron. "Forecasting day-ahead 
     electricity prices: A review of state-of-the-art algorithms, best practices and an 
-    open-access benchmark". *Renewable and Sustainable Energy Reviews* (2020). Under Review.
+    open-access benchmark". Applied Energy (2021). In Press.
 
 
 Bibtex entry::
@@ -63,6 +63,6 @@ Bibtex entry::
      title={Forecasting day-ahead electricity prices: {A} review of state-of-the-art 
      algorithms, best practices and an open-access benchmark},
      author={Jesus Lago and Grzegorz Marcjasz and Bart De Schutter and Rafał Weron},
-     journal={Renewable and Sustainable Energy Reviews},
-     year={2020 (Under review)}
+     journal={Applied Energy},
+     year={2021 (In Press)}
     }

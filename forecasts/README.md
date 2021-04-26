@@ -6,4 +6,4 @@ The forecasts were used as part of the following article:
 
     Jesus Lago, Grzegorz Marcjasz, Bart De Schutter, Rafał Weron. "Forecasting day-ahead 
     electricity prices: A review of state-of-the-art algorithms, best practices and an 
-    open-access benchmark". *Renewable and Sustainable Energy Reviews* (2020). Under Review.
+    open-access benchmark". Applied Energy (2021). In Press.

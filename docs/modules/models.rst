@@ -20,5 +20,5 @@ hyperparameter optimization, daily recalibration, and prediction.
 
 A more detailed explanations of the models can be obtained in:
 
-	J. Lago, G. Marcjasz, B. De Schutter, R. Weron. "Forecasting day-ahead electricity prices: A review of state-of-the-art algorithms, best practices and an open-access benchmark". *Renewable and Sustainable Energy Reviews (2020)*. Under Review.
+	J. Lago, G. Marcjasz, B. De Schutter, R. Weron. "Forecasting day-ahead electricity prices: A review of state-of-the-art algorithms, best practices and an open-access benchmark". *Applied Energy* (2021). In Press.
 
