@@ -987,10 +987,11 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
 
     else:
         nVal = int(percentage_val * Xtrain.shape[0])
+    nTrain = Xtrain.shape[0] - nVal # complements nVal
     
-    Xval = Xtrain[nVal:]
-    Xtrain = Xtrain[:nVal]
-    Yval = Ytrain[nVal:]
-    Ytrain = Ytrain[:nVal]
+    Xval = Xtrain[nTrain:] # last nVal obs
+    Xtrain = Xtrain[:nTrain] # first nTrain obs
+    Yval = Ytrain[nTrain:]
+    Ytrain = Ytrain[:nTrain]
 
     return Xtrain, Ytrain, Xval, Yval, Xtest, Ytest, indexTest
