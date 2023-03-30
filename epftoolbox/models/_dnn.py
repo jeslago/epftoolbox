@@ -27,8 +27,7 @@ from epftoolbox.data import read_data
 
 
 class DNNModel(object):
-
-    """Basic DNN model based on keras and tensorflow. 
+    """Basic DNN model based on keras and tensorflow.
     
     The model can be used standalone to train and predict a DNN using its fit/predict methods.
     However, it is intended to be used within the :class:`hyperparameter_optimizer` method
@@ -82,8 +81,6 @@ class DNNModel(object):
         The weight for regulization if ``regularization`` is ``'l2'`` or ``'l1'``.
     """
 
-
-    
     def __init__(self, neurons, n_features, outputShape=24, dropout=0, batch_normalization=False, lr=None,
                  verbose=False, epochs_early_stopping=40, scaler=None, loss='mae',
                  optimizer='adam', activation='relu', initializer='glorot_uniform',
@@ -237,9 +234,8 @@ class DNNModel(object):
             Number of epochs in the validation dataset without improvements
         """
         print(" Best error:\t\t{:.1e}".format(bestError))
-        print(" Best MAE:\t\t{:.2f}".format(bestMAE))                
+        print(" Best MAE:\t\t{:.2f}".format(bestMAE))
         print(" Epochs without improvement:\t{}\n".format(countNoImprovement))
-
 
     def fit(self, trainX, trainY, valX, valY):
         """Method to estimate the DNN model.
@@ -342,8 +338,7 @@ class DNNModel(object):
 
 
 class DNN(object):
-
-    """DNN for electricity price forecasting. 
+    """DNN for electricity price forecasting.
     
     It considers a set of best hyperparameters, it recalibrates a :class:`DNNModel` based on
     these hyperparameters, and makes new predictions.
@@ -391,8 +386,8 @@ class DNN(object):
     
     """
 
-    def __init__(self, experiment_id, path_hyperparameter_folder=os.path.join('.', 'experimental_files'), 
-                 nlayers=2, dataset='PJM', years_test=2, shuffle_train=1, data_augmentation=0, 
+    def __init__(self, experiment_id, path_hyperparameter_folder=os.path.join('.', 'experimental_files'),
+                 nlayers=2, dataset='PJM', years_test=2, shuffle_train=1, data_augmentation=0,
                  calibration_window=4):
 
         # Checking if provided directories exist and if not raise exception
@@ -426,7 +421,7 @@ class DNN(object):
 
         # Reading and extracting the best hyperparameters
         trials = pc.load(open(trials_file_path, "rb"))
-        
+
         self.best_hyperparameters = format_best_trial(trials.best_trial)
 
     def _regularize_data(self, Xtrain, Xval, Xtest, Ytrain, Yval):
@@ -488,21 +483,21 @@ class DNN(object):
         # Initialize model
         neurons = [int(self.best_hyperparameters['neurons' + str(k)]) for k in range(1, self.nlayers + 1)
                    if int(self.best_hyperparameters['neurons' + str(k)]) >= 50]
-            
+
         np.random.seed(int(self.best_hyperparameters['seed']))
 
-        self.model = DNNModel(neurons=neurons, n_features=Xtrain.shape[-1], 
-                              dropout=self.best_hyperparameters['dropout'], 
-                              batch_normalization=self.best_hyperparameters['batch_normalization'], 
+        self.model = DNNModel(neurons=neurons, n_features=Xtrain.shape[-1],
+                              dropout=self.best_hyperparameters['dropout'],
+                              batch_normalization=self.best_hyperparameters['batch_normalization'],
                               lr=self.best_hyperparameters['lr'], verbose=False,
                               optimizer='adam', activation=self.best_hyperparameters['activation'],
                               epochs_early_stopping=20, scaler=self.scaler, loss='mae',
-                              regularization=self.best_hyperparameters['reg'], 
+                              regularization=self.best_hyperparameters['reg'],
                               lambda_reg=self.best_hyperparameters['lambdal1'],
                               initializer=self.best_hyperparameters['init'])
 
         self.model.fit(Xtrain, Ytrain, Xval, Yval)
-        
+
     def recalibrate_predict(self, Xtrain, Ytrain, Xval, Yval, Xtest):
         """Method that first recalibrates the DNN model and then makes a prediction.
 
@@ -528,7 +523,7 @@ class DNN(object):
         numpy.array
             An array containing the predictions in the test dataset
         """
-        self.recalibrate(Xtrain=Xtrain, Ytrain=Ytrain, Xval=Xval, Yval=Yval)        
+        self.recalibrate(Xtrain=Xtrain, Ytrain=Ytrain, Xval=Xval, Yval=Yval)
         Yp = self.predict(X=Xtest)
 
         self.model.clear_session()
@@ -591,10 +586,10 @@ class DNN(object):
         # even though the dataframe contains 15 days of data (next day + last 2 weeks),
         # we provide as parameter the date of interest so that Xtest and Ytest only reflect that
         Xtrain, Ytrain, Xval, Yval, Xtest, _, _ = \
-            _build_and_split_XYs(dfTrain=df_train, features=self.best_hyperparameters, 
-                                shuffle_train=True, dfTest=df_test, date_test=next_day_date,
-                                data_augmentation=self.data_augmentation, 
-                                n_exogenous_inputs=len(df_train.columns) - 1)
+            _build_and_split_XYs(dfTrain=df_train, features=self.best_hyperparameters,
+                                 shuffle_train=True, dfTest=df_test, date_test=next_day_date,
+                                 data_augmentation=self.data_augmentation,
+                                 n_exogenous_inputs=len(df_train.columns) - 1)
 
         # Normalizing the input and outputs if needed
         Xtrain, Xval, Xtest, Ytrain, Yval = \
@@ -605,11 +600,12 @@ class DNN(object):
 
         return Yp
 
-def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.join('.', 'datasets'), 
-                                 path_hyperparameter_folder=os.path.join('.', 'experimental_files'), 
-                                 path_recalibration_folder=os.path.join('.', 'experimental_files'), 
-                                 nlayers=2, dataset='PJM', years_test=2, shuffle_train=True, 
-                                 data_augmentation=0, calibration_window=4, new_recalibration=False, 
+
+def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.join('.', 'datasets'),
+                                 path_hyperparameter_folder=os.path.join('.', 'experimental_files'),
+                                 path_recalibration_folder=os.path.join('.', 'experimental_files'),
+                                 nlayers=2, dataset='PJM', years_test=2, shuffle_train=True,
+                                 data_augmentation=0, calibration_window=4, new_recalibration=False,
                                  begin_test_date=None, end_test_date=None):
     """Function for easy evaluation of the DNN model in a test dataset using daily recalibration. 
     
@@ -679,7 +675,6 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
         written to the folder ``path_recalibration_folder``
     """
 
-
     # Checking if provided directory for recalibration exists and if not create it
     if not os.path.exists(path_recalibration_folder):
         os.makedirs(path_recalibration_folder)
@@ -714,23 +709,20 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
         # If all the dates to be forecasted have already been forecast, we print information
         # and exit the script
         if len(forecast_dates) == 0:
-
             mae = np.mean(MAE(forecast.values.squeeze(), real_values.values))
             smape = np.mean(sMAPE(forecast.values.squeeze(), real_values.values)) * 100
             print('{} - sMAPE: {:.2f}%  |  MAE: {:.3f}'.format('Final metrics', smape, mae))
-        
+
     else:
         forecast_dates = forecast.index
 
     model = DNN(experiment_id=experiment_id, path_hyperparameter_folder=path_hyperparameter_folder,
-                nlayers=nlayers, dataset=dataset, years_test=years_test, 
-                shuffle_train=shuffle_train, data_augmentation=data_augmentation, 
+                nlayers=nlayers, dataset=dataset, years_test=years_test,
+                shuffle_train=shuffle_train, data_augmentation=data_augmentation,
                 calibration_window=calibration_window)
-
 
     # For loop over the recalibration dates
     for date in forecast_dates:
-
         # For simulation purposes, we assume that the available data is
         # the data up to current date where the prices of current date are not known
         data_available = pd.concat([df_train, df_test.loc[:date + pd.Timedelta(hours=23), :]], axis=0)
@@ -746,7 +738,7 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
         forecast.loc[date, :] = Yp
 
         # Computing metrics up-to-current-date
-        mae = np.mean(MAE(forecast.loc[:date].values.squeeze(), real_values.loc[:date].values)) 
+        mae = np.mean(MAE(forecast.loc[:date].values.squeeze(), real_values.loc[:date].values))
         smape = np.mean(sMAPE(forecast.loc[:date].values.squeeze(), real_values.loc[:date].values)) * 100
 
         # Pringint information
@@ -756,6 +748,7 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
         forecast.to_csv(forecast_file_path)
 
     return forecast
+
 
 def format_best_trial(best_trial):
     """Function to format the best_trial object to a python dictionary.
@@ -793,7 +786,7 @@ def format_best_trial(best_trial):
         if key == 'activation':
             hyperparameter_list = ["relu", "softplus", "tanh", 'selu', 'LeakyReLU', 'PReLU', 'sigmoid']
         elif key == 'init':
-            hyperparameter_list = ['Orthogonal', 'lecun_uniform', 'glorot_uniform', 'glorot_normal', 
+            hyperparameter_list = ['Orthogonal', 'lecun_uniform', 'glorot_uniform', 'glorot_normal',
                                    'he_uniform', 'he_normal']
         elif key == 'scaleX':
             hyperparameter_list = ['No', 'Norm', 'Norm1', 'Std', 'Median', 'Invariant']
@@ -807,8 +800,9 @@ def format_best_trial(best_trial):
 
     return formatted_hyperparameters
 
+
 def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, dfTest=None, percentage_val=0.25,
-                        date_test=None, hyperoptimization=False, data_augmentation=False):
+                         date_test=None, hyperoptimization=False, data_augmentation=False):
     """Method to buil the X,Y pairs for training/test DNN models using dataframes and a list of
     the selected inputs
     
@@ -845,23 +839,21 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
     if dfTrain.index[0].hour != 0 or dfTest.index[0].hour != 0:
         print('Problem with the index')
 
-        
     # Calculating the number of input features
     n_features = features['In: Day'] + \
-        24 * features['In: Price D-1'] + 24 * features['In: Price D-2'] + \
-        24 * features['In: Price D-3'] + 24 * features['In: Price D-7']
+                 24 * features['In: Price D-1'] + 24 * features['In: Price D-2'] + \
+                 24 * features['In: Price D-3'] + 24 * features['In: Price D-7']
 
     for n_ex in range(1, n_exogenous_inputs + 1):
-
         n_features += 24 * features['In: Exog-' + str(n_ex) + ' D'] + \
-                     24 * features['In: Exog-' + str(n_ex) + ' D-1'] + \
-                     24 * features['In: Exog-' + str(n_ex) + ' D-7']
+                      24 * features['In: Exog-' + str(n_ex) + ' D-1'] + \
+                      24 * features['In: Exog-' + str(n_ex) + ' D-7']
 
     # Extracting the predicted dates for testing and training. We leave the first week of data
     # out of the prediction as we the maximum lag can be one week
     # In addition, if we allow training using all possible predictions within a day, we consider
     # a indexTrain per starting hour of prediction
-    
+
     # We define the potential time indexes that have to be forecasted in training
     # and testing
     indexTrain = dfTrain.loc[dfTrain.index[0] + pd.Timedelta(weeks=1):].index
@@ -877,40 +869,40 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
     if data_augmentation:
         predDatesTrain = indexTrain.round('1H')
     else:
-        predDatesTrain = indexTrain.round('1H')[::24]            
-            
-    predDatesTest = indexTest.round('1H')[::24]
+        predDatesTrain = indexTrain.round('1H')[::48]  # CHH
+
+    predDatesTest = indexTest.round('1H')[::48]  # CHH
 
     # We create dataframe where the index is the time where a prediction is made
     # and the columns is the horizons of the prediction
-    indexTrain = pd.DataFrame(index=predDatesTrain, columns=['h' + str(hour) for hour in range(24)])
-    indexTest = pd.DataFrame(index=predDatesTest, columns=['h' + str(hour) for hour in range(24)])
-    for hour in range(24):
-        indexTrain.loc[:, 'h' + str(hour)] = indexTrain.index + pd.Timedelta(hours=hour)
-        indexTest.loc[:, 'h' + str(hour)] = indexTest.index + pd.Timedelta(hours=hour)
+    indexTrain = pd.DataFrame(index=predDatesTrain, columns=['h' + str(hour) for hour in range(48)])  # CHH
+    indexTest = pd.DataFrame(index=predDatesTest, columns=['h' + str(hour) for hour in range(48)])  # CHH
+    for hour in range(48):
+        indexTrain.loc[:, 'h' + str(hour)] = indexTrain.index + pd.Timedelta(hour * 30, unit='Min')  # CHH
+        indexTest.loc[:, 'h' + str(hour)] = indexTest.index + pd.Timedelta(hour * 30, unit='Min')  # CHH
 
     # If we consider 24 predictions per day, the last 23 indexs cannot be used as there is not data
     # for that horizon:
     if data_augmentation:
-        indexTrain = indexTrain.iloc[:-23]
-    
+        indexTrain = indexTrain.iloc[:-47]  # CHH if we consider 48 prediction per day,then last 47 indexs....
+
     # Preallocating in memory the X and Y arrays          
     Xtrain = np.zeros([indexTrain.shape[0], n_features])
     Xtest = np.zeros([indexTest.shape[0], n_features])
-    Ytrain = np.zeros([indexTrain.shape[0], 24])
-    Ytest = np.zeros([indexTest.shape[0], 24])
+    Ytrain = np.zeros([indexTrain.shape[0], 48])  #CHH
+    Ytest = np.zeros([indexTest.shape[0], 48])    #CHH
 
     # Adding the day of the week as a feature if needed
     indexFeatures = 0
     if features['In: Day']:
         # For training, we assume the day of the week is a continuous variable.
         # So monday at 00 is 1. Monday at 1h is 1.04, Tuesday at 2h is 2.08, etc.
-        Xtrain[:, 0] = indexTrain.index.dayofweek + indexTrain.index.hour / 24
-        Xtest[:, 0] = indexTest.index.dayofweek            
+        Xtrain[:, 0] = indexTrain.index.dayofweek + indexTrain.index.hour / 48
+        Xtest[:, 0] = indexTest.index.dayofweek
         indexFeatures += 1
-    
+
     # For each possible horizon
-    for hour in range(24):
+    for hour in range(48):
         # For each possible past day where prices can be included
         for past_day in [1, 2, 3, 7]:
 
@@ -922,26 +914,26 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
 
             # We include feature if feature selection indicates it
             if features['In: Price D-' + str(past_day)]:
+                print(past_day, hour)
                 Xtrain[:, indexFeatures] = dfTrain.loc[pastIndexTrain, 'Price']
                 Xtest[:, indexFeatures] = dfTest.loc[pastIndexTest, 'Price']
                 indexFeatures += 1
 
-    
     # For each possible horizon
-    for hour in range(24):
+    for hour in range(48):
         # For each possible past day where exogeneous can be included
         for past_day in [1, 7]:
 
             # We define the corresponding past time indexs 
             pastIndexTrain = pd.to_datetime(indexTrain.loc[:, 'h' + str(hour)].values) - \
-                pd.Timedelta(hours=24 * past_day)
+                             pd.Timedelta(hours=24 * past_day)
             pastIndexTest = pd.to_datetime(indexTest.loc[:, 'h' + str(hour)].values) - \
-                pd.Timedelta(hours=24 * past_day)
+                            pd.Timedelta(hours=24 * past_day)
 
             # For each of the exogenous inputs we include feature if feature selection indicates it
             for exog in range(1, n_exogenous_inputs + 1):
                 if features['In: Exog-' + str(exog) + ' D-' + str(past_day)]:
-                    Xtrain[:, indexFeatures] = dfTrain.loc[pastIndexTrain, 'Exogenous ' + str(exog)]                    
+                    Xtrain[:, indexFeatures] = dfTrain.loc[pastIndexTrain, 'Exogenous ' + str(exog)]
                     Xtest[:, indexFeatures] = dfTest.loc[pastIndexTest, 'Exogenous ' + str(exog)]
                     indexFeatures += 1
 
@@ -952,8 +944,8 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
                 futureIndexTrain = pd.to_datetime(indexTrain.loc[:, 'h' + str(hour)].values)
                 futureIndexTest = pd.to_datetime(indexTest.loc[:, 'h' + str(hour)].values)
 
-                Xtrain[:, indexFeatures] = dfTrain.loc[futureIndexTrain, 'Exogenous ' + str(exog)]        
-                Xtest[:, indexFeatures] = dfTest.loc[futureIndexTest, 'Exogenous ' + str(exog)] 
+                Xtrain[:, indexFeatures] = dfTrain.loc[futureIndexTrain, 'Exogenous ' + str(exog)]
+                Xtest[:, indexFeatures] = dfTest.loc[futureIndexTest, 'Exogenous ' + str(exog)]
                 indexFeatures += 1
 
     # Extracting the predicted values Y
@@ -961,12 +953,11 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
         futureIndexTrain = pd.to_datetime(indexTrain.loc[:, 'h' + str(hour)].values)
         futureIndexTest = pd.to_datetime(indexTest.loc[:, 'h' + str(hour)].values)
 
-        Ytrain[:, hour] = dfTrain.loc[futureIndexTrain, 'Price']        
-        Ytest[:, hour] = dfTest.loc[futureIndexTest, 'Price'] 
+        Ytrain[:, hour] = dfTrain.loc[futureIndexTrain, 'Price']
+        Ytest[:, hour] = dfTest.loc[futureIndexTest, 'Price']
 
-    # Redefining indexTest to return only the dates at which a prediction is made
+        # Redefining indexTest to return only the dates at which a prediction is made
     indexTest = indexTest.index
-
 
     if shuffle_train:
         nVal = int(percentage_val * Xtrain.shape[0])
@@ -987,10 +978,10 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
 
     else:
         nVal = int(percentage_val * Xtrain.shape[0])
-    nTrain = Xtrain.shape[0] - nVal # complements nVal
-    
-    Xval = Xtrain[nTrain:] # last nVal obs
-    Xtrain = Xtrain[:nTrain] # first nTrain obs
+    nTrain = Xtrain.shape[0] - nVal  # complements nVal
+
+    Xval = Xtrain[nTrain:]  # last nVal obs
+    Xtrain = Xtrain[:nTrain]  # first nTrain obs
     Yval = Ytrain[nTrain:]
     Ytrain = Ytrain[:nTrain]
 

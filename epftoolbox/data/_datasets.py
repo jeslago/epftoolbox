@@ -135,11 +135,11 @@ def read_data(path, dataset='PJM', years_test=2, begin_test_date=None, end_test_
     # or by providing the init and end date of the test period
     if begin_test_date is None and end_test_date is None:
         number_datapoints = len(data.index)
-        number_training_datapoints = number_datapoints - 24 * 364 * years_test
+        number_training_datapoints = number_datapoints - 48 * 364 * years_test # CHH if the data is in 30 min freq - will have 48 datapoint in a day
 
-        # We consider that a year is 52 weeks (364 days) instead of the traditional 365
-        df_train = data.loc[:data.index[0] + pd.Timedelta(hours=number_training_datapoints - 1), :]
-        df_test = data.loc[data.index[0] + pd.Timedelta(hours=number_training_datapoints):, :]
+        # We consider that a year is 52 weeks (364 days) instead of the traditional 365 # CHH
+        df_train = data[:number_training_datapoints] # data.loc[:data.index[0] + pd.Timedelta(hours=number_training_datapoints - 1), :]
+        df_test = data[number_training_datapoints:] # data.loc[data.index[0] + pd.Timedelta(hours=number_training_datapoints):, :]
     
     else:
         try:

@@ -130,7 +130,7 @@ def _hyperopt_objective(hyperparameters, trials, trials_file_path, max_evals, nl
     # can be given as an external parameter. If the value 0 is given, the calibration window
     # is included as a hyperparameter to optimize
     dfTrain_cw = dfTrain.loc[dfTrain.index[-1] - pd.Timedelta(weeks=52) * calibration_window +
-                             pd.Timedelta(hours=1):]
+                             pd.Timedelta(30,unit='Min'):]      #CHH
 
     # Saving hyperoptimization state and printing message
     pc.dump(trials, open(trials_file_path, "wb"))
