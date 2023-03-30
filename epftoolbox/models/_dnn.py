@@ -906,7 +906,7 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
         # For training, we assume the day of the week is a continuous variable.
         # So monday at 00 is 1. Monday at 1h is 1.04, Tuesday at 2h is 2.08, etc.
         Xtrain[:, 0] = indexTrain.index.dayofweek + indexTrain.index.hour / 24
-        Xtest[:, 0] = indexTest.index.dayofweek            
+        Xtest[:, 0] = indexTest.index.dayofweek + indexTest.index.hour / 24
         indexFeatures += 1
     
     # For each possible horizon
