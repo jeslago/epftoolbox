@@ -81,7 +81,7 @@ class DNNModel(object):
         The weight for regulization if ``regularization`` is ``'l2'`` or ``'l1'``.
     """
 
-    def __init__(self, neurons, n_features, outputShape=24, dropout=0, batch_normalization=False, lr=None,
+    def __init__(self, neurons, n_features, outputShape=48, dropout=0, batch_normalization=False, lr=None,
                  verbose=False, epochs_early_stopping=40, scaler=None, loss='mae',
                  optimizer='adam', activation='relu', initializer='glorot_uniform',
                  regularization=None, lambda_reg=0):
@@ -692,8 +692,8 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
     forecast_file_path = os.path.join(path_recalibration_folder, forecast_file_name)
 
     # Defining empty forecast array and the real values to be predicted in a more friendly format
-    forecast = pd.DataFrame(index=df_test.index[::24], columns=['h' + str(k) for k in range(24)])
-    real_values = df_test.loc[:, ['Price']].values.reshape(-1, 24)
+    forecast = pd.DataFrame(index=df_test.index[::48], columns=['h' + str(k) for k in range(48)])
+    real_values = df_test.loc[:, ['Price']].values.reshape(-1, 48)
     real_values = pd.DataFrame(real_values, index=forecast.index, columns=forecast.columns)
 
     # If we are not starting a new recalibration but re-starting an old one, we import the
@@ -841,13 +841,13 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
 
     # Calculating the number of input features
     n_features = features['In: Day'] + \
-                 24 * features['In: Price D-1'] + 24 * features['In: Price D-2'] + \
-                 24 * features['In: Price D-3'] + 24 * features['In: Price D-7']
+                 48 * features['In: Price D-1'] + 48 * features['In: Price D-2'] + \
+                 48 * features['In: Price D-3'] + 48 * features['In: Price D-7']
 
     for n_ex in range(1, n_exogenous_inputs + 1):
-        n_features += 24 * features['In: Exog-' + str(n_ex) + ' D'] + \
-                      24 * features['In: Exog-' + str(n_ex) + ' D-1'] + \
-                      24 * features['In: Exog-' + str(n_ex) + ' D-7']
+        n_features += 48 * features['In: Exog-' + str(n_ex) + ' D'] + \
+                      48 * features['In: Exog-' + str(n_ex) + ' D-1'] + \
+                      48 * features['In: Exog-' + str(n_ex) + ' D-7']
 
     # Extracting the predicted dates for testing and training. We leave the first week of data
     # out of the prediction as we the maximum lag can be one week
@@ -914,7 +914,6 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
 
             # We include feature if feature selection indicates it
             if features['In: Price D-' + str(past_day)]:
-                print(past_day, hour)
                 Xtrain[:, indexFeatures] = dfTrain.loc[pastIndexTrain, 'Price']
                 Xtest[:, indexFeatures] = dfTest.loc[pastIndexTest, 'Price']
                 indexFeatures += 1
@@ -949,7 +948,7 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
                 indexFeatures += 1
 
     # Extracting the predicted values Y
-    for hour in range(24):
+    for hour in range(48):
         futureIndexTrain = pd.to_datetime(indexTrain.loc[:, 'h' + str(hour)].values)
         futureIndexTest = pd.to_datetime(indexTest.loc[:, 'h' + str(hour)].values)
 

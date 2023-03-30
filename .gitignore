@@ -1,6 +1,6 @@
 # Editors
 .vscode/
-.idea/
+.idea/*
 
 # Vagrant
 .vagrant/
@@ -58,6 +58,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+*.xml
 *.cover
 .hypothesis/
 .pytest_cache/
