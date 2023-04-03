@@ -844,16 +844,20 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
     if dfTrain.index[0].hour != 0 or dfTest.index[0].hour != 0:
         print('Problem with the index')
 
+    if dfTrain.index.inferred_freq == '30T':
+        nfreq = 48
+    else:
+        nfreq = 24
 
     # Calculating the number of input features
     n_features = features['In: Day'] + \
-                 48 * features['In: Price D-1'] + 48 * features['In: Price D-2'] + \
-                 48 * features['In: Price D-3'] + 48 * features['In: Price D-7']
+                 nfreq * features['In: Price D-1'] + nfreq * features['In: Price D-2'] + \
+                 nfreq * features['In: Price D-3'] + nfreq * features['In: Price D-7']
 
     for n_ex in range(1, n_exogenous_inputs + 1):
-        n_features += 48 * features['In: Exog-' + str(n_ex) + ' D'] + \
-                      48 * features['In: Exog-' + str(n_ex) + ' D-1'] + \
-                      48 * features['In: Exog-' + str(n_ex) + ' D-7']
+        n_features += nfreq * features['In: Exog-' + str(n_ex) + ' D'] + \
+                      nfreq * features['In: Exog-' + str(n_ex) + ' D-1'] + \
+                      nfreq * features['In: Exog-' + str(n_ex) + ' D-7']
 
     # Extracting the predicted dates for testing and training. We leave the first week of data
     # out of the prediction as we the maximum lag can be one week
@@ -875,40 +879,47 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
     if data_augmentation:
         predDatesTrain = indexTrain.round('1H')
     else:
-        predDatesTrain = indexTrain.round('1H')[::48]  # CHH
+        predDatesTrain = indexTrain.round('1H')[::nfreq]  # CHH
 
-    predDatesTest = indexTest.round('1H')[::48]  # CHH
+    predDatesTest = indexTest.round('1H')[::nfreq]  # CHH
 
     # We create dataframe where the index is the time where a prediction is made
     # and the columns is the horizons of the prediction
-    indexTrain = pd.DataFrame(index=predDatesTrain, columns=['h' + str(hour) for hour in range(48)])  # CHH
-    indexTest = pd.DataFrame(index=predDatesTest, columns=['h' + str(hour) for hour in range(48)])  # CHH
-    for hour in range(48):
-        indexTrain.loc[:, 'h' + str(hour)] = indexTrain.index + pd.Timedelta(hour * 30, unit='Min')  # CHH
-        indexTest.loc[:, 'h' + str(hour)] = indexTest.index + pd.Timedelta(hour * 30, unit='Min')  # CHH
+    indexTrain = pd.DataFrame(index=predDatesTrain, columns=['h' + str(hour) for hour in range(nfreq)])  # CHH
+    indexTest = pd.DataFrame(index=predDatesTest, columns=['h' + str(hour) for hour in range(nfreq)])  # CHH
+
+    if nfreq == 48 :
+        for hour in range(48):
+            indexTrain.loc[:, 'h' + str(hour)] = indexTrain.index + pd.Timedelta(hour * 30, unit='Min')  # CHH
+            indexTest.loc[:, 'h' + str(hour)] = indexTest.index + pd.Timedelta(hour * 30, unit='Min')  # CHH
+    else:
+        for hour in range(24):
+            indexTrain.loc[:, 'h' + str(hour)] = indexTrain.index + pd.Timedelta(hours=hour)
+            indexTest.loc[:, 'h' + str(hour)] = indexTest.index + pd.Timedelta(hours=hour)
+
 
     # If we consider 24 predictions per day, the last 23 indexs cannot be used as there is not data
     # for that horizon:
     if data_augmentation:
-        indexTrain = indexTrain.iloc[:-47]  # CHH if we consider 48 prediction per day,then last 47 indexs....
+        indexTrain = indexTrain.iloc[:-(nfreq-1)]  # CHH if we consider 48 prediction per day,then last 47 indexs....
 
     # Preallocating in memory the X and Y arrays          
     Xtrain = np.zeros([indexTrain.shape[0], n_features])
     Xtest = np.zeros([indexTest.shape[0], n_features])
-    Ytrain = np.zeros([indexTrain.shape[0], 48])  #CHH
-    Ytest = np.zeros([indexTest.shape[0], 48])    #CHH
+    Ytrain = np.zeros([indexTrain.shape[0], nfreq])  #CHH
+    Ytest = np.zeros([indexTest.shape[0], nfreq])    #CHH
 
     # Adding the day of the week as a feature if needed
     indexFeatures = 0
     if features['In: Day']:
         # For training, we assume the day of the week is a continuous variable.
         # So monday at 00 is 1. Monday at 1h is 1.04, Tuesday at 2h is 2.08, etc.
-        Xtrain[:, 0] = indexTrain.index.dayofweek + indexTrain.index.hour / 48
+        Xtrain[:, 0] = indexTrain.index.dayofweek + indexTrain.index.hour / nfreq
         Xtest[:, 0] = indexTest.index.dayofweek
         indexFeatures += 1
 
     # For each possible horizon
-    for hour in range(48):
+    for hour in range(nfreq):
         # For each possible past day where prices can be included
         for past_day in [1, 2, 3, 7]:
 
@@ -926,7 +937,7 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
 
 
     # For each possible horizon
-    for hour in range(48):
+    for hour in range(nfreq):
         # For each possible past day where exogeneous can be included
         for past_day in [1, 7]:
 
@@ -955,7 +966,7 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
                 indexFeatures += 1
 
     # Extracting the predicted values Y
-    for hour in range(48):
+    for hour in range(nfreq):
         futureIndexTrain = pd.to_datetime(indexTrain.loc[:, 'h' + str(hour)].values)
         futureIndexTest = pd.to_datetime(indexTest.loc[:, 'h' + str(hour)].values)
 
