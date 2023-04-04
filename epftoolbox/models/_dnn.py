@@ -84,7 +84,7 @@ class DNNModel(object):
 
 
 
-    def __init__(self, neurons, n_features, outputShape=48, dropout=0, batch_normalization=False, lr=None,
+    def __init__(self, neurons, n_features, outputShape, dropout=0, batch_normalization=False, lr=None,
                  verbose=False, epochs_early_stopping=40, scaler=None, loss='mae',
                  optimizer='adam', activation='relu', initializer='glorot_uniform',
                  regularization=None, lambda_reg=0):
@@ -465,7 +465,7 @@ class DNN(object):
 
         return Xtrain, Xval, Xtest, Ytrain, Yval
 
-    def recalibrate(self, Xtrain, Ytrain, Xval, Yval):
+    def recalibrate(self, Xtrain, Ytrain, Xval, Yval, outputshape):
         """Method that recalibrates the model.
 
         The method receives the training and validation dataset, and trains a :class:`DNNModel` model
@@ -491,7 +491,7 @@ class DNN(object):
 
         np.random.seed(int(self.best_hyperparameters['seed']))
 
-        self.model = DNNModel(neurons=neurons, n_features=Xtrain.shape[-1],
+        self.model = DNNModel(neurons=neurons, n_features=Xtrain.shape[-1], outputShape=outputshape,
                               dropout=self.best_hyperparameters['dropout'],
                               batch_normalization=self.best_hyperparameters['batch_normalization'],
                               lr=self.best_hyperparameters['lr'], verbose=False,
@@ -503,7 +503,7 @@ class DNN(object):
 
         self.model.fit(Xtrain, Ytrain, Xval, Yval)
 
-    def recalibrate_predict(self, Xtrain, Ytrain, Xval, Yval, Xtest):
+    def recalibrate_predict(self, Xtrain, Ytrain, Xval, Yval, Xtest,outputshape):
         """Method that first recalibrates the DNN model and then makes a prediction.
 
         The method receives the training and validation dataset, and trains a :class:`DNNModel` model
@@ -528,7 +528,7 @@ class DNN(object):
         numpy.array
             An array containing the predictions in the test dataset
         """
-        self.recalibrate(Xtrain=Xtrain, Ytrain=Ytrain, Xval=Xval, Yval=Yval)
+        self.recalibrate(Xtrain=Xtrain, Ytrain=Ytrain, Xval=Xval, Yval=Yval,outputshape=outputshape)
         Yp = self.predict(X=Xtest)
 
         self.model.clear_session()
@@ -579,8 +579,14 @@ class DNN(object):
         
         """
 
-        # We define the new training dataset considering the last calibration_window years of data 
-        df_train = df.loc[:next_day_date - pd.Timedelta(30, unit='Min')]
+        if df.index.inferred_freq == '30T':
+            # We define the new training dataset considering the last calibration_window years of data
+            df_train = df.loc[:next_day_date - pd.Timedelta(30, unit='Min')]
+            nfreq = 48
+        else:
+            df_train = df.loc[:next_day_date - pd.Timedelta(hours=1)]
+            nfreq = 24
+
         df_train = df_train.loc[next_day_date - pd.Timedelta(hours=self.calibration_window * 364 * 24):]
 
         # We define the test dataset as the next day (they day of interest) plus the last two weeks
@@ -601,7 +607,7 @@ class DNN(object):
             self._regularize_data(Xtrain=Xtrain, Xval=Xval, Xtest=Xtest, Ytrain=Ytrain, Yval=Yval)
 
         # Recalibrating the neural network and extracting the prediction
-        Yp = self.recalibrate_predict(Xtrain=Xtrain, Ytrain=Ytrain, Xval=Xval, Yval=Yval, Xtest=Xtest)
+        Yp = self.recalibrate_predict(Xtrain=Xtrain, Ytrain=Ytrain, Xval=Xval, Yval=Yval, Xtest=Xtest,outputshape=nfreq)
 
         return Yp
 
@@ -695,9 +701,14 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
 
     forecast_file_path = os.path.join(path_recalibration_folder, forecast_file_name)
 
+    if df_train.index.inferred_freq == '30T':
+        nfreq = 48
+    else:
+        nfreq = 24
+
     # Defining empty forecast array and the real values to be predicted in a more friendly format
-    forecast = pd.DataFrame(index=df_test.index[::48], columns=['h' + str(k) for k in range(48)])
-    real_values = df_test.loc[:, ['Price']].values.reshape(-1, 48)
+    forecast = pd.DataFrame(index=df_test.index[::nfreq], columns=['h' + str(k) for k in range(nfreq)])
+    real_values = df_test.loc[:, ['Price']].values.reshape(-1, nfreq)
     real_values = pd.DataFrame(real_values, index=forecast.index, columns=forecast.columns)
 
     # If we are not starting a new recalibration but re-starting an old one, we import the
