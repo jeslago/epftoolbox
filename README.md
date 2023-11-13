@@ -16,11 +16,22 @@ Download the repository and navigate into the folder
 $ git clone https://github.com/jeslago/epftoolbox.git
 $ cd epftoolbox
 ```
+[Optional] Create an environment to avoid conflicts, e.g. using [conda](https://docs.conda.io/en/latest/):
+```bash
+conda create --name epftoolbox python=3.10
+conda activate epftoolbox
+```
+
 Install using pip
 ```bash
 $ pip install .
 ```
 Navigate to the examples folder and check the existing examples to get you started. The examples include several applications of the two state-of-the art forecasting model: a deep neural net and the LEAR model.
+
+### Troubleshooting
+The installation will fail if [tensorflow](https://www.tensorflow.org/install/pip#macos) requirements are not met. As of 2023/11/13, they require a python version between 3.9 and 3.11 and a 64bits python version.
+
+For any other problem, open an [issue](https://github.com/jeslago/epftoolbox/issues).
 
 ## Documentation
 The documentation can be found [here](https://epftoolbox.readthedocs.io/en/latest/). It provides an introduction to the library features and explains all functionalities in detail. Note that the documentation is still being built and some functionalities are still undocumented.

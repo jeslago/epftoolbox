@@ -30,7 +30,7 @@ def read_data(path, dataset='PJM', years_test=2, begin_test_date=None, end_test_
     day-ahead markets.
 
     Note that the data available online for these five markets is limited to certain periods (see the 
-    `database <https://sandbox.zenodo.org/record/632147>`_ for further details).  
+    `database <https://zenodo.org/records/4624805>`_ for further details).  
     
     Parameters
     ----------
@@ -111,7 +111,7 @@ def read_data(path, dataset='PJM', years_test=2, begin_test_date=None, end_test_
         if os.path.exists(file_path):
             data = pd.read_csv(file_path, index_col=0)
         else:
-            url_dir = 'https://sandbox.zenodo.org/api/files/fb5bae17-de91-4ce7-b348-0d62e52824b5/'
+            url_dir = 'https://zenodo.org/records/4624805/files/'
             data = pd.read_csv(url_dir + dataset + '.csv', index_col=0)
             data.to_csv(file_path)
     else:
