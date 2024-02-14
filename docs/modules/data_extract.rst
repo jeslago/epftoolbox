@@ -3,7 +3,7 @@
 ====================
 Dataset extraction
 ====================
-This module provides an easy-to-use interface to download data from multiple day-ahead electricity markets using the following `database <https://sandbox.zenodo.org/record/632147>`_. The module is built around the function :py:class:`read_data <epftoolbox.data.read_data>`, and it can be used to obtain the market data from the following periods and day-ahead electricity markets:
+This module provides an easy-to-use interface to download data from multiple day-ahead electricity markets using the following `database <https://zenodo.org/records/4624805>`_. The module is built around the function :py:class:`read_data <epftoolbox.data.read_data>`, and it can be used to obtain the market data from the following periods and day-ahead electricity markets:
 
 =============  ==========================
    Market       Period
