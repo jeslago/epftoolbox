@@ -20,7 +20,7 @@ setup(
     python_requires='>=3.9, <=3.11',
     install_requires=['hyperopt>=0.2', 'tensorflow>=2.2', 'scikit-learn>=0.22',
                       'pandas>=1', 'numpy>=1', 'statsmodels>=0.11',
-                      'matplotlib>=3', 'scipy>=1.4'],
+                      'matplotlib>=3', 'scipy>=1.4', 'keras<3'],
     packages=find_packages(include=['epftoolbox', 'epftoolbox.*']),
     classifiers=[
     'Development Status :: 3 - Alpha',
