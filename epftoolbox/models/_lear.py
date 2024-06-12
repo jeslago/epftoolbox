@@ -237,7 +237,7 @@ class LEAR(object):
         # For each hour of a day
         for hour in range(24):
             # For each possible past day where exogenous inputs can be included
-            for past_day in [1, 2]:
+            for past_day in [1, 7]:
                 # For each of the exogenous input
                 for exog in range(1, n_exogenous_inputs + 1):
 
