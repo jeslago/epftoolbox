@@ -138,7 +138,7 @@ def _transform_input_prices_for_naive_forecast(p_real, m, freq):
         for Saturday to Monday.
     freq : str
         Frequency of the data if ``p_real`` are numpy.ndarray objects.
-        It must take one of the following four values ``'1H'`` for 1 hour, ``'30T'`` for 30 minutes, 
+        It must take one of the following four values ``'1h'`` for 1 hour, ``'30T'`` for 30 minutes, 
         ``'15T'`` for 15 minutes, or ``'5T'`` for 5 minutes,  (these are the four standard values in 
         day-ahead electricity markets). If the shape of ``p_real`` is (ndays, n_prices_day), 
         freq should be the frequency of the columns not the daily frequency of the rows.    
@@ -158,7 +158,7 @@ def _transform_input_prices_for_naive_forecast(p_real, m, freq):
             ' data has to be pandas.DataFrame object.')
 
     # Defining number of prices per day depending on frequency
-    n_prices_day = {'1H': 24, '30T': 48, '15T': 96, '5T': 288, '1T': 1440}[freq]
+    n_prices_day = {'1h': 24, '30T': 48, '15T': 96, '5T': 288, '1T': 1440}[freq]
 
     # If numpy arrays are used, ensure that there is integer number of days in the dataset
     if type(p_real) == np.ndarray and p_real.size % n_prices_day != 0:
