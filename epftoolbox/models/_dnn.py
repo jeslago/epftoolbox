@@ -875,11 +875,11 @@ def _build_and_split_XYs(dfTrain, features, shuffle_train, n_exogenous_inputs, d
     # it is just the index resample to 24 so we have a date per day.
     # For the multiple datapoints per day, we have as many dates as indexs
     if data_augmentation:
-        predDatesTrain = indexTrain.round('1H')
+        predDatesTrain = indexTrain.round('1h')
     else:
-        predDatesTrain = indexTrain.round('1H')[::24]            
+        predDatesTrain = indexTrain.round('1h')[::24]            
             
-    predDatesTest = indexTest.round('1H')[::24]
+    predDatesTest = indexTest.round('1h')[::24]
 
     # We create dataframe where the index is the time where a prediction is made
     # and the columns is the horizons of the prediction

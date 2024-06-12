@@ -11,7 +11,7 @@ from epftoolbox.evaluation._ancillary_functions import _process_inputs_for_metri
 from epftoolbox.evaluation import MAE
 
 
-def rMAE(p_real, p_pred, m=None, freq='1H'):
+def rMAE(p_real, p_pred, m=None, freq='1h'):
 
     """Function that computes the relative mean absolute error (rMAE) between two forecasts:
     
@@ -24,7 +24,7 @@ def rMAE(p_real, p_pred, m=None, freq='1H'):
     dataset ``p_real`` and the :class:`naive_forecast` function with a seasonality index ``m``.
 
     If the datasets provided are numpy.ndarray objects, the function requires a ``freq`` argument specifying
-    the data frequency. The ``freq`` argument must take one of the following four values ``'1H'`` for 1 hour,
+    the data frequency. The ``freq`` argument must take one of the following four values ``'1h'`` for 1 hour,
     ``'30T'`` for 30 minutes, ``'15T'`` for 15 minutes, or ``'5T'`` for 5 minutes,  (these are the 
     four standard values in day-ahead electricity markets). 
     
@@ -52,7 +52,7 @@ def rMAE(p_real, p_pred, m=None, freq='1H'):
         for Saturday to Monday.    
     freq : str, optional
         Frequency of the data if ``p_real``, ``p_pred``, and ``p_real_in`` are numpy.ndarray objects.
-        It must take one of the following four values ``'1H'`` for 1 hour, ``'30T'`` for 30 minutes, 
+        It must take one of the following four values ``'1h'`` for 1 hour, ``'30T'`` for 30 minutes, 
         ``'15T'`` for 15 minutes, or ``'5T'`` for 5 minutes,  (these are the four standard values in 
         day-ahead electricity markets). If the shape of ``p_real`` is (ndays, n_prices_day), 
         freq should be the frequency of the columns not the daily frequency of the rows.    
@@ -111,7 +111,7 @@ def rMAE(p_real, p_pred, m=None, freq='1H'):
     0.5265639198107801
     >>> 
     >>> # Evaluating rMAE when real price and forecasts are both numpy arrays
-    >>> rMAE(p_pred=fc_DNN_ensemble.values, p_real=real_price.values, m='W', freq='1H')
+    >>> rMAE(p_pred=fc_DNN_ensemble.values, p_real=real_price.values, m='W', freq='1h')
     0.4031805447246898
     >>> 
     >>> # Evaluating rMAE when input values are of shape (ndays, n_prices/day) instead 
@@ -120,7 +120,7 @@ def rMAE(p_real, p_pred, m=None, freq='1H'):
     >>> rMAE(p_pred=fc_DNN_ensemble_2D, p_real=real_price_2D, m='W')
     0.4031805447246898
     >>> # Numpy arrays
-    >>> rMAE(p_pred=fc_DNN_ensemble_2D.values, p_real=real_price_2D.values, m='W', freq='1H')
+    >>> rMAE(p_pred=fc_DNN_ensemble_2D.values, p_real=real_price_2D.values, m='W', freq='1h')
     0.4031805447246898
     >>> 
     >>> # Evaluating rMAE when input values are of shape (nprices,) 
@@ -131,7 +131,7 @@ def rMAE(p_real, p_pred, m=None, freq='1H'):
     0.4031805447246898
     >>> # Numpy arrays
     >>> rMAE(p_pred=fc_DNN_ensemble.values.squeeze(), 
-    ...      p_real=real_price.values.squeeze(), m='W', freq='1H')
+    ...      p_real=real_price.values.squeeze(), m='W', freq='1h')
     0.4031805447246898
     """
 

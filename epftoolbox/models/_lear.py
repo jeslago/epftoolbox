@@ -190,8 +190,8 @@ class LEAR(object):
             indexTest = df_test.loc[date_test:date_test + pd.Timedelta(hours=23)].index
 
         # We extract the prediction dates/days.
-        predDatesTrain = indexTrain.round('1H')[::24]                
-        predDatesTest = indexTest.round('1H')[::24]
+        predDatesTrain = indexTrain.round('1h')[::24]                
+        predDatesTest = indexTest.round('1h')[::24]
 
         # We create two dataframe to build XY.
         # These dataframes have as indices the first hour of the day (00:00)
