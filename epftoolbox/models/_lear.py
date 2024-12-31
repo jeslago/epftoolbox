@@ -313,7 +313,7 @@ class LEAR(object):
         # We define the new training dataset and test datasets 
         df_train = df.loc[:next_day_date - pd.Timedelta(hours=1)]
         # Limiting the training dataset to the calibration window
-        df_train = df_train.iloc[-self.calibration_window * 24:]
+        df_train = df_train.iloc[-calibration_window * 24:]
     
         # We define the test dataset as the next day (they day of interest) plus the last two weeks
         # in order to be able to build the necessary input features. 
