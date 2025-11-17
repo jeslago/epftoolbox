@@ -17,56 +17,34 @@ class MedianScaler(object):
         self.fitted = False
 
     def fit(self, data):
-
         if len(data.shape)!=2:
-            raise IndexError('Error: Provide 2-D array. First dimension is datapoints and' + 
-                  ' second features')
-            return -1
-
+            raise IndexError('Error: Provide 2-D array. First dimension is datapoints and second features')
         self.median = np.median(data, axis=0)
         self.mad = mad(data, axis=0)
         self.fitted = True
         
     def fit_transform(self, data):
-
         self.fit(data)
         return self.transform(data)
     
     def transform(self, data):
-
         if not self.fitted:
-            print('Error: The scaler has not been yet fitted. Called fit or fit_transform')
-            return -1
+            raise RuntimeError('Error: The scaler has not been yet fitted. Called fit or fit_transform')
+        if len(data.shape) != 2:
+            raise IndexError('Error: Provide 2-D array. First dimension is datapoints and second features')
 
-        if len(data.shape)!=2:
-            raise IndexError('Error: Provide 2-D array. First dimension is datapoints and' + 
-                  ' second features')
+        numerator = data - self.median
+        denominator = self.mad
+        return np.divide(numerator, denominator, out=np.zeros_like(numerator), where=denominator != 0)
 
-        transformed_data = np.zeros(shape=data.shape)
-
-        for i in range(data.shape[1]):
-
-            transformed_data[:, i] = (data[:, i] - self.median[i]) / self.mad[i]
-
-        return transformed_data
 
     def inverse_transform(self, data):
-
         if not self.fitted:
-            print('Error: The scaler has not been yet fitted. Called fit or fit_transform')
-            return -1
-
+            raise RuntimeError('Error: The scaler has not been yet fitted. Call fit or fit_transform')
         if len(data.shape)!=2:
-            raise IndexError('Error: Provide 2-D array. First dimension is datapoints and' + 
-                  ' second features')
+            raise IndexError('Error: Provide 2-D array. First dimension is datapoints and second features')
 
-        transformed_data = np.zeros(shape=data.shape)
-
-        for i in range(data.shape[1]):
-
-            transformed_data[:, i] = data[:, i] * self.mad[i] + self.median[i] 
-
-        return transformed_data
+        return data * self.mad + self.median
 
 
 class InvariantScaler(MedianScaler):

@@ -412,7 +412,7 @@ def evaluate_lear_in_test_dataset(path_datasets_folder=os.path.join('.', 'datase
         data_available = pd.concat([df_train, df_test.loc[:date + pd.Timedelta(hours=23), :]], axis=0)
 
         # We set the real prices for current date to NaN in the dataframe of available data
-        data_available.loc[date:date + pd.Timedelta(hours=23), 'Price'] = np.NaN
+        data_available.loc[date:date + pd.Timedelta(hours=23), 'Price'] = np.nan
 
         # Recalibrating the model with the most up-to-date available data and making a prediction
         # for the next day

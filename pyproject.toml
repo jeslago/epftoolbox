@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "epftoolbox"
+version = "1.0.1"  # Bumping the version is good practice
+description = "An open-access benchmark and toolbox for electricity price forecasting"
+authors = ["Jesus Lago <jesuslagogarcia@gmail.com>"]
+license = "GNU AGPLv3"
+readme = "README.md"
+
+# This assumes the package code is in an 'epftoolbox' folder at the root.
+# Adjust if your project has a 'src' layout.
+packages = [
+    { include = "epftoolbox" },
+]
+
+[tool.poetry.dependencies]
+python = "~3.11"
+hyperopt = ">=0.2"
+keras = ">=3"
+matplotlib = ">=3"
+pandas = ">=1"
+scikit-learn = ">=0.22"
+scipy = ">=1.4"
+statsmodels = ">=0.11"
+numpy = "^2.3.3"
+tensorflow = "^2.20.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
