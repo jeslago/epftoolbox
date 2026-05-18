@@ -69,10 +69,22 @@ class LEAR(object):
         Xtrain[:, :-7] = Xtrain_no_dummies
 
         self.models = {}
+        n_samples, n_features = Xtrain.shape
         for h in range(24):
 
-            # Estimating lambda hyperparameter using LARS
-            param_model = LassoLarsIC(criterion='aic', max_iter=2500)
+            # Estimating lambda hyperparameter using LARS.
+            # scikit-learn >=1.1 requires noise_variance when n_samples <= n_features;
+            # fall back to a sample-variance estimate of the target in that case.
+            try:
+                if n_samples > n_features:
+                    param_model = LassoLarsIC(criterion='aic', max_iter=2500)
+                else:
+                    param_model = LassoLarsIC(
+                        criterion='aic', max_iter=2500,
+                        noise_variance=float(np.var(Ytrain[:, h])))
+            except TypeError:
+                # Older scikit-learn without noise_variance support
+                param_model = LassoLarsIC(criterion='aic', max_iter=2500)
             param = param_model.fit(Xtrain, Ytrain[:, h]).alpha_
 
             # Re-calibrating LEAR using standard LASSO estimation technique
@@ -412,7 +424,7 @@ def evaluate_lear_in_test_dataset(path_datasets_folder=os.path.join('.', 'datase
         data_available = pd.concat([df_train, df_test.loc[:date + pd.Timedelta(hours=23), :]], axis=0)
 
         # We set the real prices for current date to NaN in the dataframe of available data
-        data_available.loc[date:date + pd.Timedelta(hours=23), 'Price'] = np.NaN
+        data_available.loc[date:date + pd.Timedelta(hours=23), 'Price'] = np.nan
 
         # Recalibrating the model with the most up-to-date available data and making a prediction
         # for the next day

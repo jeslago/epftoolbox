@@ -112,13 +112,13 @@ class DNNModel(object):
             opt = 'adam'
         else:
             if optimizer == 'adam':
-                opt = kr.optimizers.Adam(lr=lr, clipvalue=10000)
+                opt = kr.optimizers.Adam(learning_rate=lr, clipvalue=10000)
             if optimizer == 'RMSprop':
-                opt = kr.optimizers.RMSprop(lr=lr, clipvalue=10000)
+                opt = kr.optimizers.RMSprop(learning_rate=lr, clipvalue=10000)
             if optimizer == 'adagrad':
-                opt = kr.optimizers.Adagrad(lr=lr, clipvalue=10000)
+                opt = kr.optimizers.Adagrad(learning_rate=lr, clipvalue=10000)
             if optimizer == 'adadelta':
-                opt = kr.optimizers.Adadelta(lr=lr, clipvalue=10000)
+                opt = kr.optimizers.Adadelta(learning_rate=lr, clipvalue=10000)
 
         self.model.compile(loss=loss, optimizer=opt)
 
@@ -161,20 +161,19 @@ class DNNModel(object):
         for k, neurons in enumerate(self.neurons):
 
             if self.activation == 'LeakyReLU':
-                past_Dense = Dense(neurons, activation='linear', batch_input_shape=inputShape,
+                past_Dense = Dense(neurons, activation='linear',
                                    kernel_initializer=self.initializer,
                                    kernel_regularizer=self._reg(self.lambda_reg))(past_Dense)
                 past_Dense = LeakyReLU(alpha=.001)(past_Dense)
 
             elif self.activation == 'PReLU':
-                past_Dense = Dense(neurons, activation='linear', batch_input_shape=inputShape,
+                past_Dense = Dense(neurons, activation='linear',
                                    kernel_initializer=self.initializer,
                                    kernel_regularizer=self._reg(self.lambda_reg))(past_Dense)
                 past_Dense = PReLU()(past_Dense)
 
             else:
                 past_Dense = Dense(neurons, activation=self.activation,
-                                   batch_input_shape=inputShape,
                                    kernel_initializer=self.initializer,
                                    kernel_regularizer=self._reg(self.lambda_reg))(past_Dense)
 
@@ -736,7 +735,7 @@ def evaluate_dnn_in_test_dataset(experiment_id, path_datasets_folder=os.path.joi
         data_available = pd.concat([df_train, df_test.loc[:date + pd.Timedelta(hours=23), :]], axis=0)
 
         # We set the real prices for current date to NaN in the dataframe of available data
-        data_available.loc[date:date + pd.Timedelta(hours=23), 'Price'] = np.NaN
+        data_available.loc[date:date + pd.Timedelta(hours=23), 'Price'] = np.nan
 
         # Recalibrating the model with the most up-to-date available data and making a prediction
         # for the next day
