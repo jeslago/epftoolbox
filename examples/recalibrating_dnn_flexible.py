@@ -129,7 +129,7 @@ for date in forecast_dates:
     data_available = pd.concat([df_train, df_test.loc[:date + pd.Timedelta(hours=23), :]], axis=0)
 
     # We extract real prices for current date and set them to NaN in the dataframe of available data
-    data_available.loc[date:date + pd.Timedelta(hours=23), 'Price'] = np.NaN
+    data_available.loc[date:date + pd.Timedelta(hours=23), 'Price'] = np.nan
 
     # Recalibrating the model with the most up-to-date available data and making a prediction
     # for the next day
